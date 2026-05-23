@@ -7,7 +7,7 @@ const SUPA_ANON = import.meta.env.VITE_SUPA_ANON;
 const supabase = createClient(SUPA_URL, SUPA_ANON);
 
 const DEFAULT_SETTINGS = {
-  branches: ["الفرع الرئيسي"],
+  branches: ["الفرع الرئيسي", "العبد -جسر السويس"],
   materials: [
     { id: "mat_1", name: "Zirconia", price: 450 },
     { id: "mat_2", name: "E-max", price: 450 },
@@ -24,6 +24,7 @@ const DEFAULT_SETTINGS = {
   paymentStatuses: [
     { id: "ps_1", name: "Paid" },
     { id: "ps_2", name: "Unpaid" },
+    { id: "ps_3", name: "Free" },
   ],
 };
 
@@ -501,11 +502,33 @@ const toLocal = (r) => ({
   createdAt: r.created_at,
 });
 
-function exportCSV(cases) {
+// دالة التصدير مع تاريخ عربي
+function exportCSV(casesToExport) {
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  };
+
+  const getPaymentText = (status) => {
+    if (status === "Paid") return "مدفوع";
+    if (status === "Free") return "مجاناً";
+    return "غير مدفوع";
+  };
+
   const headers = ["الفرع", "المريض", "المادة", "السعر", "الوحدات", "الإجمالي", "الحالة", "الدفع", "البداية", "الإجراء", "ملاحظات"];
-  const rows = cases.map(c => [
-    c.branchName, c.patientName, c.materialName, c.pricePerUnit, c.units, c.totalAmount,
-    c.caseStatus, c.paymentStatus, c.startDate, c.actionDate || "", c.notes || ""
+  const rows = casesToExport.map(c => [
+    c.branchName,
+    c.patientName,
+    c.materialName,
+    c.pricePerUnit,
+    c.units,
+    c.totalAmount,
+    c.caseStatus,
+    getPaymentText(c.paymentStatus),
+    formatDate(c.startDate),
+    formatDate(c.actionDate) || "",
+    c.notes || ""
   ]);
   const csv = "\uFEFF" + [headers, ...rows].map(r => r.map(v => `"${v}"`).join(",")).join("\n");
   const a = document.createElement("a");
@@ -526,6 +549,12 @@ async function importCSV(file, userId, currentBranch) {
           const cols = row.match(/(".*?"|[^,]+)(?=,|$)/g);
           if (!cols || cols.length < 6) continue;
           const clean = cols.map(c => c.replace(/^"|"$/g, "").trim());
+          
+          let paymentStatus = clean[7] || "Unpaid";
+          if (paymentStatus === "مدفوع") paymentStatus = "Paid";
+          if (paymentStatus === "مجاناً") paymentStatus = "Free";
+          if (paymentStatus === "غير مدفوع") paymentStatus = "Unpaid";
+          
           const rec = {
             branchName: clean[0] || currentBranch,
             patientName: clean[1],
@@ -533,9 +562,9 @@ async function importCSV(file, userId, currentBranch) {
             pricePerUnit: parseFloat(clean[3]) || 0,
             units: parseInt(clean[4]) || 0,
             caseStatus: clean[6] || "In progress",
-            paymentStatus: clean[7] || "Unpaid",
-            startDate: clean[8] || todayISO(),
-            actionDate: clean[9] || null,
+            paymentStatus: paymentStatus,
+            startDate: clean[8] ? clean[8].split('/').reverse().join('-') : todayISO(),
+            actionDate: clean[9] ? clean[9].split('/').reverse().join('-') : null,
             notes: clean[10] || null,
           };
           if (!rec.patientName) continue;
@@ -713,7 +742,7 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
             <div className="form-group">
               <label className="form-label">حالة الدفع</label>
               <select className="form-input" value={form.paymentStatus} onChange={e => setForm(f => ({ ...f, paymentStatus: e.target.value }))}>
-                {settings.paymentStatuses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                {settings.paymentStatuses.map(s => <option key={s.id} value={s.name}>{s.name === "Paid" ? "مدفوع" : (s.name === "Free" ? "مجاناً" : "غير مدفوع")}</option>)}
               </select>
             </div>
           </div>
@@ -746,6 +775,12 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
 function CaseDrawer({ c, settings, onEdit, onDelete, onTogglePay, onClose }) {
   const sm = STATUS_META[c.caseStatus] || {};
   const mc = MAT_COLORS[c.materialName] || "var(--mint)";
+  
+  const getPaymentLabel = (status) => {
+    if (status === "Paid") return "مدفوع";
+    if (status === "Free") return "مجاناً";
+    return "غير مدفوع";
+  };
 
   return (
     <>
@@ -757,7 +792,11 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onTogglePay, onClose }) {
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               <Badge label={c.caseStatus} color={sm.color} bg={sm.bg} icon={sm.icon} />
               <Badge label={c.materialName} color={mc} bg={mc + "20"} />
-              <Badge label={c.paymentStatus} color={c.paymentStatus === "Paid" ? "var(--mint)" : "var(--rose)"} bg={c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : "rgba(239,68,68,.12)"} />
+              <Badge 
+                label={getPaymentLabel(c.paymentStatus)} 
+                color={c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : "var(--rose)")} 
+                bg={c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : "rgba(239,68,68,.12)")} 
+              />
             </div>
           </div>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
@@ -794,7 +833,7 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onTogglePay, onClose }) {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <button className={`btn ${c.paymentStatus === "Paid" ? "btn-danger" : "btn-mint"}`} style={{ justifyContent: "center" }} onClick={() => onTogglePay(c)}>
-              {c.paymentStatus === "Paid" ? "⬅️ وضع غير مدفوع" : "✅ تحديد كمدفوع"}
+              {c.paymentStatus === "Paid" ? "⬅️ وضع غير مدفوع" : (c.paymentStatus === "Free" ? "✅ تحديد كمدفوع" : "✅ تحديد كمدفوع")}
             </button>
             <div style={{ display: "flex", gap: 8 }}>
               <button className="btn btn-ghost" style={{ flex: 1, justifyContent: "center" }} onClick={() => onEdit(c)}>✏️ تعديل</button>
@@ -965,7 +1004,8 @@ export default function App() {
     const src = activeTab === "current" ? tabFiltered : branchFiltered.filter(c => monthKey(c.actionDate || c.startDate || c.createdAt) === (histMonth || curMonth));
     const total = src.reduce((s, c) => s + (c.totalAmount || 0), 0);
     const paid = src.filter(c => c.paymentStatus === "Paid").reduce((s, c) => s + (c.totalAmount || 0), 0);
-    return { total, paid, unpaid: total - paid, count: src.length };
+    const free = src.filter(c => c.paymentStatus === "Free").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    return { total, paid, free, unpaid: total - paid - free, count: src.length };
   }, [tabFiltered, branchFiltered, activeTab, histMonth, curMonth]);
 
   const availableMonths = useMemo(() => {
@@ -1015,11 +1055,14 @@ export default function App() {
   }
 
   async function handleTogglePay(c) {
-    const nv = c.paymentStatus === "Paid" ? "Unpaid" : "Paid";
+    let nv;
+    if (c.paymentStatus === "Paid") nv = "Unpaid";
+    else if (c.paymentStatus === "Free") nv = "Paid";
+    else nv = "Paid";
     await updateCaseDB(c.id, { payment_status: nv });
     setCases(prev => prev.map(x => x.id === c.id ? { ...x, paymentStatus: nv } : x));
     setDetailCase(prev => prev ? { ...prev, paymentStatus: nv } : null);
-    showToast(nv === "Paid" ? "✅ تم تحديد كمدفوع" : "↩️ تم تحديد كغير مدفوع");
+    showToast(nv === "Paid" ? "✅ تم تحديد كمدفوع" : (nv === "Free" ? "✅ تم تحديد كمجاناً" : "↩️ تم تحديد كغير مدفوع"));
   }
 
   async function handleSaveSettings(s) {
@@ -1042,6 +1085,18 @@ export default function App() {
     e.target.value = "";
   }
 
+  // دالة التصدير مع فلتر الشهر
+  const exportWithFilter = useCallback(() => {
+    let dataToExport = tabFiltered;
+    if (activeTab === "current" && histMonth) {
+      dataToExport = branchFiltered.filter(c => {
+        const d = c.actionDate || c.startDate || c.createdAt;
+        return monthKey(d) === histMonth;
+      });
+    }
+    exportCSV(dataToExport);
+  }, [tabFiltered, branchFiltered, activeTab, histMonth]);
+
   if (!authInit) return <div className="loading" style={{ minHeight: "100vh" }}><div className="spinner" /></div>;
   if (!session) return <LoginScreen onLogin={s => setSession(s)} />;
 
@@ -1061,7 +1116,7 @@ export default function App() {
           <div className="header-actions">
             <input type="file" ref={importRef} accept=".csv" style={{ display: "none" }} onChange={handleImport} />
             <button className="btn btn-ghost btn-sm" onClick={() => importRef.current?.click()}>📥 استيراد</button>
-            <button className="btn btn-ghost btn-sm" onClick={() => exportCSV(tabFiltered)}>📤 تصدير</button>
+            <button className="btn btn-ghost btn-sm" onClick={exportWithFilter}>📤 تصدير</button>
             <button className="btn btn-ghost btn-icon" onClick={() => setShowSettings(true)}>⚙️</button>
             <button className="btn btn-ghost btn-sm" onClick={() => supabase.auth.signOut()}>خروج</button>
           </div>
@@ -1076,8 +1131,8 @@ export default function App() {
             <>
               <span className="branch-label" style={{ marginRight: 8 }}>الشهر:</span>
               <select className="month-select" value={histMonth} onChange={e => setHistMonth(e.target.value)}>
-                <option value="">الشهر الحالي</option>
-                {availableMonths.filter(m => m !== curMonth).map(m => {
+                <option value="">كل الشهور</option>
+                {availableMonths.map(m => {
                   const [y, mo] = m.split("-");
                   const names = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
                   return <option key={m} value={m}>{names[parseInt(mo) - 1]} {y}</option>;
@@ -1100,6 +1155,7 @@ export default function App() {
             { label: "إجمالي الشهر", value: `${fmtMoney(stats.total)} ج.م`, color: "var(--gold)", icon: "💰" },
             { label: "محصّل", value: `${fmtMoney(stats.paid)} ج.م`, color: "var(--mint)", icon: "✅" },
             { label: "غير محصّل", value: `${fmtMoney(stats.unpaid)} ج.م`, color: "var(--rose)", icon: "⏳" },
+            { label: "مجاناً", value: `${fmtMoney(stats.free)} ج.م`, color: "var(--amber)", icon: "🎁" },
             { label: "عدد الحالات", value: tabFiltered.length, color: "var(--lavender)", icon: "📋" },
           ].map(({ label, value, color, icon }, i) => (
             <div className="stat-card fade-up" key={i} style={{ animationDelay: `${i * 0.06}s`, "--card-color": color }}>
@@ -1120,6 +1176,11 @@ export default function App() {
             {tabFiltered.map((c, i) => {
               const sm = STATUS_META[c.caseStatus] || {};
               const mc = MAT_COLORS[c.materialName] || "var(--mint)";
+              const getPaymentLabel = (status) => {
+                if (status === "Paid") return "مدفوع";
+                if (status === "Free") return "مجاناً";
+                return "غير مدفوع";
+              };
               return (
                 <div key={c.id} className="case-card fade-up" style={{ "--status-color": sm.color, animationDelay: `${Math.min(i, 12) * 0.04}s` }} onClick={() => setDetailCase(c)}>
                   <div className="case-card-header">
@@ -1129,7 +1190,11 @@ export default function App() {
                   <div className="case-badges">
                     <Badge label={c.caseStatus} color={sm.color} bg={sm.bg} icon={sm.icon} />
                     <Badge label={c.materialName} color={mc} bg={mc + "20"} />
-                    <Badge label={c.paymentStatus} color={c.paymentStatus === "Paid" ? "var(--mint)" : "var(--rose)"} bg={c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : "rgba(239,68,68,.12)"} />
+                    <Badge 
+                      label={getPaymentLabel(c.paymentStatus)} 
+                      color={c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : "var(--rose)")} 
+                      bg={c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : "rgba(239,68,68,.12)")} 
+                    />
                   </div>
                   <div className="case-footer">
                     <div><div className="case-amount" style={{ color: "var(--gold)" }}>{fmtMoney(c.totalAmount)} ج.م</div><div className="case-units">{c.units} وحدة × {c.pricePerUnit}</div></div>
