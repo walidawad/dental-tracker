@@ -562,7 +562,7 @@ async function importCSV(file, userId, currentBranch) {
           if (!cols || cols.length < 6) continue;
           const clean = cols.map(c => c.replace(/^"|"$/g, "").trim());
           
-          let paymentStatus = clean[7] || "Unpaid";
+          let paymentStatus = clean[9] || "Unpaid";
           if (paymentStatus === "مدفوع" || paymentStatus === "مدفوع كامل") paymentStatus = "Paid";
           if (paymentStatus === "مجاناً") paymentStatus = "Free";
           if (paymentStatus.includes("مدفوع جزئي")) paymentStatus = "Partial";
@@ -797,7 +797,7 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
   );
 }
 
-function CaseDrawer({ c, settings, onEdit, onDelete, onTogglePay, onClose }) {
+function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose }) {
   const sm = STATUS_META[c.caseStatus] || {};
   const mc = MAT_COLORS[c.materialName] || "var(--mint)";
   const remaining = (c.totalAmount || 0) - (c.paidAmount || 0);
@@ -870,6 +870,37 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onTogglePay, onClose }) {
               </div>
             )}
           </div>
+          
+          {/* أزرار تغيير حالة الدفع */}
+          <div className="drawer-section">
+            <div className="drawer-section-title">تغيير حالة الدفع</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button 
+                className={`btn ${c.paymentStatus === "Paid" ? "btn-primary" : "btn-ghost"}`}
+                style={{ flex: 1, justifyContent: "center" }}
+                onClick={() => onUpdatePayment(c, "Paid")}
+              >
+                ✅ مدفوع
+              </button>
+              <button 
+                className={`btn ${c.paymentStatus === "Unpaid" ? "btn-primary" : "btn-ghost"}`}
+                style={{ flex: 1, justifyContent: "center" }}
+                onClick={() => onUpdatePayment(c, "Unpaid")}
+              >
+                ❌ غير مدفوع
+              </button>
+              <button 
+                className={`btn ${c.paymentStatus === "Free" ? "btn-primary" : "btn-ghost"}`}
+                style={{ flex: 1, justifyContent: "center" }}
+                onClick={() => onUpdatePayment(c, "Free")}
+              >
+                🎁 مجاناً
+              </button>
+            </div>
+          </div>
+
+          <div className="divider" style={{ margin: "12px 0" }} />
+
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <button className="btn btn-ghost" style={{ justifyContent: "center" }} onClick={() => onEdit(c)}>✏️ تعديل الحالة</button>
             <button className="btn btn-danger" style={{ justifyContent: "center" }} onClick={() => onDelete(c)}>🗑 حذف الحالة</button>
@@ -885,7 +916,6 @@ function SettingsScreen({ settings, onSave, onClose }) {
   const [loading, setLoading] = useState(false);
   const [newBranch, setNewBranch] = useState("");
   const [newMaterial, setNewMaterial] = useState({ name: "", price: "" });
-  const [matEdit, setMatEdit] = useState(null);
   const [editingMaterial, setEditingMaterial] = useState(null);
 
   function addBranch() {
@@ -1164,6 +1194,35 @@ export default function App() {
     showToast("🗑 تم الحذف");
   }
 
+  async function handleUpdatePayment(c, newStatus) {
+    if (c.paymentStatus === newStatus) return;
+    
+    let updateData = { payment_status: newStatus };
+    
+    if (newStatus === "Paid") {
+      updateData.paid_amount = c.totalAmount;
+    } else if (newStatus === "Free" || newStatus === "Unpaid") {
+      updateData.paid_amount = 0;
+    }
+    
+    await updateCaseDB(c.id, updateData);
+    
+    setCases(prev => prev.map(x => x.id === c.id ? { 
+      ...x, 
+      paymentStatus: newStatus,
+      paidAmount: updateData.paid_amount !== undefined ? updateData.paid_amount : x.paidAmount
+    } : x));
+    
+    setDetailCase(prev => prev ? { 
+      ...prev, 
+      paymentStatus: newStatus,
+      paidAmount: updateData.paid_amount !== undefined ? updateData.paid_amount : prev.paidAmount
+    } : null);
+    
+    const msg = newStatus === "Paid" ? "✅ تم التحديد كمدفوع كامل" : (newStatus === "Free" ? "🎁 تم التحديد كمجاناً" : "❌ تم التحديد كغير مدفوع");
+    showToast(msg);
+  }
+
   async function handleSaveSettings(s) {
     await saveSettings(session.user.id, s);
     setSettings(s);
@@ -1318,7 +1377,14 @@ export default function App() {
       <button className="btn-fab" onClick={() => setShowAdd(true)}>＋</button>
       {showAdd && <CaseModal settings={settings} defaultBranch={activeBranch !== "all" ? activeBranch : settings.branches[0]} onSave={handleAddCase} onClose={() => setShowAdd(false)} />}
       {editCase && <CaseModal existing={editCase} settings={settings} defaultBranch={editCase.branchName} onSave={handleEditCase} onClose={() => setEditCase(null)} />}
-      {detailCase && <CaseDrawer c={detailCase} settings={settings} onEdit={c => { setEditCase(c); setDetailCase(null); }} onDelete={handleDelete} onTogglePay={null} onClose={() => setDetailCase(null)} />}
+      {detailCase && <CaseDrawer 
+        c={detailCase} 
+        settings={settings} 
+        onEdit={c => { setEditCase(c); setDetailCase(null); }} 
+        onDelete={handleDelete} 
+        onUpdatePayment={handleUpdatePayment}
+        onClose={() => setDetailCase(null)} 
+      />}
       {showSettings && <SettingsScreen settings={settings} onSave={handleSaveSettings} onClose={() => setShowSettings(false)} />}
       <Toast msg={toast} />
     </>
