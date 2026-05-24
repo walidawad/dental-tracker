@@ -256,7 +256,7 @@ body {
 
 .cases-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 12px;
 }
 .case-card {
@@ -292,9 +292,9 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 9px;
+  padding: 6px 10px;
   border-radius: 20px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
@@ -324,17 +324,22 @@ body {
   background: var(--surface2);
   border: 1px solid var(--border2);
   border-radius: var(--r2);
-  z-index: 1000;
-  min-width: 140px;
+  z-index: 2000;
+  min-width: 150px;
+  max-width: 200px;
   box-shadow: 0 8px 24px rgba(0,0,0,.4);
   overflow: hidden;
 }
 .dropdown-item {
-  padding: 8px 12px;
-  font-size: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: background .1s;
   text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+.dropdown-item:last-child {
+  border-bottom: none;
 }
 .dropdown-item:hover {
   background: var(--accent);
@@ -378,7 +383,8 @@ body {
   border: 1px solid var(--border2);
   border-radius: 18px;
   width: 100%; max-width: 560px;
-  max-height: 90vh; overflow-y: auto;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 40px 80px rgba(0,0,0,.7);
   animation: fadeUp .25s ease;
 }
@@ -423,19 +429,34 @@ body {
   animation: fadeIn .2s ease;
 }
 .drawer {
-  position: fixed; top: 0; left: 0; bottom: 0;
-  width: min(480px, 100vw);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 100vw;
   background: var(--surface);
   border-right: 1px solid var(--border2);
-  overflow-y: auto; z-index: 151;
+  overflow-y: auto;
+  z-index: 151;
   animation: slideIn .25s ease;
+  box-shadow: 8px 0 40px rgba(0,0,0,.5);
+}
+@media (min-width: 640px) {
+  .drawer {
+    width: min(480px, 100vw);
+  }
 }
 .drawer-header {
   padding: 20px 20px 16px;
   border-bottom: 1px solid var(--border);
-  display: flex; justify-content: space-between; align-items: flex-start;
-  position: sticky; top: 0;
-  background: var(--surface); z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
 }
 .drawer-body { padding: 20px; }
 .drawer-section { margin-bottom: 24px; }
@@ -469,6 +490,7 @@ body {
   padding: 10px 20px; border-radius: 20px;
   font-size: 13px; font-weight: 600; color: var(--text);
   z-index: 300; animation: fadeUp .25s ease;
+  white-space: nowrap;
 }
 
 .empty { text-align: center; padding: 60px 20px; color: var(--text3); }
@@ -486,6 +508,7 @@ body {
   .cases-grid { grid-template-columns: 1fr; }
   .form-row { grid-template-columns: 1fr; }
   .month-selector-wrapper { flex-direction: column; align-items: flex-start; }
+  .badge-clickable { padding: 4px 8px; font-size: 11px; }
 }
 `;
 
@@ -602,7 +625,7 @@ function exportCSV(casesToExport) {
     c.pricePerUnit,
     c.units,
     c.caseStatus,
-    c.paymentStatus,
+    c.paymentStatus === "Paid" ? "مدفوع" : (c.paymentStatus === "Free" ? "مجاناً" : (c.paymentStatus === "Partial" ? "مدفوع جزئي" : "غير مدفوع")),
     c.paidAmount || 0,
     formatDate(c.startDate),
     c.actionDate ? formatDate(c.actionDate) : "",
@@ -1140,7 +1163,7 @@ export default function App() {
   const [activeBranch, setActiveBranch] = useState("all");
   const [activeTab, setActiveTab] = useState("current");
   const [search, setSearch] = useState("");
-  const [selectedYear, setSelectedYear] = useState(2025);
+  const [selectedYear, setSelectedYear] = useState(2026);
   const [selectedMonth, setSelectedMonth] = useState(5);
   const [showAdd, setShowAdd] = useState(false);
   const [editCase, setEditCase] = useState(null);
@@ -1384,12 +1407,17 @@ export default function App() {
 
   const handleBadgeClick = (e, caseId, type) => {
     e.stopPropagation();
+    e.preventDefault();
+    
     const rect = e.target.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : rect.left;
+    const clientY = e.touches ? e.touches[0].clientY : rect.bottom;
+    
     setDropdownState({
       caseId: caseId,
       type: type,
-      x: rect.left,
-      y: rect.bottom + 5
+      x: clientX,
+      y: clientY + 10
     });
   };
 
@@ -1399,7 +1427,11 @@ export default function App() {
 
   useEffect(() => {
     document.addEventListener('click', closeDropdown);
-    return () => document.removeEventListener('click', closeDropdown);
+    document.addEventListener('touchstart', closeDropdown);
+    return () => {
+      document.removeEventListener('click', closeDropdown);
+      document.removeEventListener('touchstart', closeDropdown);
+    };
   }, [closeDropdown]);
 
   if (!authInit) return <div className="loading" style={{ minHeight: "100vh" }}><div className="spinner" /></div>;
@@ -1542,7 +1574,7 @@ export default function App() {
                   </div>
                   
                   {dropdownState.caseId === c.id && dropdownState.type === 'status' && (
-                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 1000 }}>
+                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 2000 }}>
                       {settings.caseStatuses.map(s => (
                         <div key={s.id} className="dropdown-item" onClick={() => handleUpdateCaseStatus(c, s.name)}>
                           {STATUS_META[s.name]?.icon} {s.name}
@@ -1552,7 +1584,7 @@ export default function App() {
                   )}
                   
                   {dropdownState.caseId === c.id && dropdownState.type === 'material' && (
-                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 1000 }}>
+                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 2000 }}>
                       {settings.materials.map(m => (
                         <div key={m.id} className="dropdown-item" onClick={() => handleUpdateMaterial(c, m.name)}>
                           {m.name} {m.price ? `(${m.price})` : '(سعر حر)'}
@@ -1562,7 +1594,7 @@ export default function App() {
                   )}
                   
                   {dropdownState.caseId === c.id && dropdownState.type === 'payment' && (
-                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 1000 }}>
+                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 2000 }}>
                       {settings.paymentStatuses.filter(s => s.name !== "Partial").map(s => (
                         <div key={s.id} className="dropdown-item" onClick={() => handleUpdatePayment(c, s.name)}>
                           {s.name === "Paid" ? "✅ مدفوع كامل" : (s.name === "Free" ? "🎁 مجاناً" : "❌ غير مدفوع")}
