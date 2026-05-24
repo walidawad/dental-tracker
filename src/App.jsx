@@ -12,7 +12,7 @@ const DEFAULT_SETTINGS = {
     { id: "mat_1", name: "Zirconia", price: 450 },
     { id: "mat_2", name: "E-max", price: 450 },
     { id: "mat_3", name: "PMMA", price: 225 },
-    { id: "mat_other", name: "Other / أخرى", price: null },
+    { id: "mat_4", name: "Other / أخرى", price: null },
   ],
   caseStatuses: [
     { id: "cs_1", name: "In progress", isFinal: false },
@@ -166,6 +166,57 @@ body {
 }
 .branch-select:focus { border-color: var(--accent); }
 
+.year-selector {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.year-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+}
+.year-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.year-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.months-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.month-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.month-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.month-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
 .tabs {
   display: flex; gap: 4px;
   padding: 8px 24px;
@@ -222,16 +273,9 @@ body {
 }
 .search-wrap input:focus { border-color: var(--accent); }
 
-.month-select {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--r2); color: var(--text);
-  font-family: 'Tajawal', sans-serif; font-size: 13px;
-  padding: 8px 12px; outline: none; cursor: pointer;
-}
-
 .cases-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
   gap: 12px;
 }
 .case-card {
@@ -239,11 +283,11 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--r);
   padding: 16px;
-  cursor: pointer;
+  position: relative;
+  overflow: hidden;
   transition: all .18s;
-  animation: fadeUp .3s ease both;
-  position: relative; overflow: hidden;
 }
+.case-card:hover { border-color: var(--border2); transform: translateY(-2px); }
 .case-card::after {
   content: '';
   position: absolute; right: 0; top: 0; bottom: 0;
@@ -251,7 +295,9 @@ body {
   background: var(--status-color, var(--border));
   border-radius: 0 var(--r) var(--r) 0;
 }
-.case-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.case-clickable-area {
+  cursor: pointer;
+}
 .case-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
 .case-name { font-size: 15px; font-weight: 700; color: var(--text); }
 .case-date { font-size: 11px; color: var(--text3); margin-top: 2px; }
@@ -261,10 +307,56 @@ body {
 .case-units { font-size: 11px; color: var(--text3); }
 .case-branch { font-size: 11px; color: var(--text2); background: var(--surface2); padding: 3px 8px; border-radius: 20px; }
 
+.badge-clickable {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all .15s;
+  border: 1px solid transparent;
+}
+.badge-clickable:hover {
+  transform: scale(1.02);
+  filter: brightness(1.1);
+  border-color: var(--accent);
+}
+
 .badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 9px; border-radius: 20px;
-  font-size: 11px; font-weight: 700; white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dropdown-menu {
+  position: absolute;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  z-index: 200;
+  min-width: 120px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  overflow: hidden;
+}
+.dropdown-item {
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background .1s;
+  text-align: center;
+}
+.dropdown-item:hover {
+  background: var(--accent);
+  color: #fff;
 }
 
 .btn {
@@ -279,8 +371,6 @@ body {
 .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
 .btn-danger { background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3); color: var(--rose); }
 .btn-danger:hover { background: var(--rose); color: #fff; }
-.btn-mint { background: rgba(0,212,161,.15); border: 1px solid rgba(0,212,161,.3); color: var(--mint); }
-.btn-mint:hover { background: var(--mint); color: #fff; }
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 .btn-icon { padding: 7px; border-radius: var(--r2); }
 .btn-fab {
@@ -406,6 +496,8 @@ body {
 .spinner { width: 18px; height: 18px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+.divider { height: 1px; background: var(--border); margin: 12px 0; }
+
 @media (max-width: 640px) {
   .main { padding: 14px; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
@@ -419,6 +511,16 @@ function Badge({ label, color, bg, icon }) {
     <span className="badge" style={{ color, background: bg, border: `1px solid ${color}30` }}>
       {icon && <span>{icon}</span>}
       {label}
+    </span>
+  );
+}
+
+function ClickableBadge({ label, color, bg, icon, onClick }) {
+  return (
+    <span className="badge-clickable" style={{ color, background: bg, border: `1px solid ${color}30` }} onClick={onClick}>
+      {icon && <span>{icon}</span>}
+      {label}
+      <span style={{ fontSize: 10, marginRight: 4 }}>▼</span>
     </span>
   );
 }
@@ -512,34 +614,26 @@ const toLocal = (r) => ({
   createdAt: r.created_at,
 });
 
+// دالة التصدير - نفس تنسيق الاستيراد بالضبط
 function exportCSV(casesToExport) {
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const d = new Date(dateStr);
-    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+    return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
   };
 
-  const getPaymentText = (status, paidAmount) => {
-    if (status === "Paid") return "مدفوع كامل";
-    if (status === "Free") return "مجاناً";
-    if (status === "Partial") return `مدفوع جزئي (${fmtMoney(paidAmount)} ج.م)`;
-    return "غير مدفوع";
-  };
-
-  const headers = ["الفرع", "المريض", "المادة", "السعر", "الوحدات", "الإجمالي", "المحصل", "المتبقي", "الحالة", "الدفع", "البداية", "الإجراء", "ملاحظات"];
+  const headers = ["الفرع", "المريض", "المادة", "السعر", "الوحدات", "الحالة", "الدفع", "المحصل", "البداية", "الإجراء", "ملاحظات"];
   const rows = casesToExport.map(c => [
     c.branchName,
     c.patientName,
     c.materialName,
     c.pricePerUnit,
     c.units,
-    c.totalAmount,
-    c.paidAmount || 0,
-    (c.totalAmount - (c.paidAmount || 0)),
     c.caseStatus,
-    getPaymentText(c.paymentStatus, c.paidAmount),
+    c.paymentStatus,
+    c.paidAmount || 0,
     formatDate(c.startDate),
-    formatDate(c.actionDate) || "",
+    c.actionDate ? formatDate(c.actionDate) : "",
     c.notes || ""
   ]);
   const csv = "\uFEFF" + [headers, ...rows].map(r => r.map(v => `"${v}"`).join(",")).join("\n");
@@ -555,38 +649,86 @@ async function importCSV(file, userId, currentBranch) {
     reader.onload = async (e) => {
       try {
         const text = e.target.result.replace(/^\uFEFF/, "");
-        const rows = text.split("\n").slice(1);
+        const lines = text.split("\n");
+        const headers = lines[0].split(",").map(h => h.replace(/^"|"$/g, "").trim());
+        
+        // تحديد أعمدة CSV بناءً على العناوين
+        const colIndex = {
+          branch: headers.findIndex(h => h.includes("الفرع")),
+          patient: headers.findIndex(h => h.includes("المريض")),
+          material: headers.findIndex(h => h.includes("المادة")),
+          price: headers.findIndex(h => h.includes("السعر")),
+          units: headers.findIndex(h => h.includes("الوحدات")),
+          caseStatus: headers.findIndex(h => h.includes("الحالة")),
+          paymentStatus: headers.findIndex(h => h.includes("الدفع")),
+          paidAmount: headers.findIndex(h => h.includes("المحصل")),
+          startDate: headers.findIndex(h => h.includes("البداية")),
+          actionDate: headers.findIndex(h => h.includes("الإجراء")),
+          notes: headers.findIndex(h => h.includes("ملاحظات"))
+        };
+        
         let count = 0;
-        for (const row of rows) {
-          const cols = row.match(/(".*?"|[^,]+)(?=,|$)/g);
-          if (!cols || cols.length < 6) continue;
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          
+          // استخدام regex لقراءة CSV بشكل صحيح
+          const cols = line.match(/(".*?"|[^,]+)(?=,|$)/g);
+          if (!cols || cols.length < 5) continue;
+          
           const clean = cols.map(c => c.replace(/^"|"$/g, "").trim());
           
-          let paymentStatus = clean[9] || "Unpaid";
+          let paymentStatus = colIndex.paymentStatus >= 0 && clean[colIndex.paymentStatus] ? clean[colIndex.paymentStatus] : "Unpaid";
           if (paymentStatus === "مدفوع" || paymentStatus === "مدفوع كامل") paymentStatus = "Paid";
           if (paymentStatus === "مجاناً") paymentStatus = "Free";
-          if (paymentStatus.includes("مدفوع جزئي")) paymentStatus = "Partial";
+          if (paymentStatus.includes("مدفوع جزئي") || paymentStatus === "Partial") paymentStatus = "Partial";
           if (paymentStatus === "غير مدفوع") paymentStatus = "Unpaid";
           
+          let startDate = todayISO();
+          if (colIndex.startDate >= 0 && clean[colIndex.startDate]) {
+            let dateStr = clean[colIndex.startDate];
+            if (dateStr.includes("/")) {
+              const parts = dateStr.split("/");
+              if (parts.length === 3) startDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+            } else if (dateStr.includes("-")) {
+              startDate = dateStr;
+            }
+          }
+          
+          let actionDate = null;
+          if (colIndex.actionDate >= 0 && clean[colIndex.actionDate]) {
+            let dateStr = clean[colIndex.actionDate];
+            if (dateStr.includes("/")) {
+              const parts = dateStr.split("/");
+              if (parts.length === 3) actionDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+            } else if (dateStr.includes("-")) {
+              actionDate = dateStr;
+            }
+          }
+          
           const rec = {
-            branchName: clean[0] || currentBranch,
-            patientName: clean[1],
-            materialName: clean[2],
-            pricePerUnit: parseFloat(clean[3]) || 0,
-            units: parseInt(clean[4]) || 0,
-            caseStatus: clean[8] || "In progress",
+            branchName: (colIndex.branch >= 0 && clean[colIndex.branch]) ? clean[colIndex.branch] : currentBranch,
+            patientName: (colIndex.patient >= 0 && clean[colIndex.patient]) ? clean[colIndex.patient] : "",
+            materialName: (colIndex.material >= 0 && clean[colIndex.material]) ? clean[colIndex.material] : "Zirconia",
+            pricePerUnit: (colIndex.price >= 0 && clean[colIndex.price]) ? parseFloat(clean[colIndex.price]) || 450 : 450,
+            units: (colIndex.units >= 0 && clean[colIndex.units]) ? parseInt(clean[colIndex.units]) || 1 : 1,
+            caseStatus: (colIndex.caseStatus >= 0 && clean[colIndex.caseStatus]) ? clean[colIndex.caseStatus] : "In progress",
             paymentStatus: paymentStatus,
-            paidAmount: parseFloat(clean[6]) || 0,
-            startDate: clean[10] ? clean[10].split('/').reverse().join('-') : todayISO(),
-            actionDate: clean[11] ? clean[11].split('/').reverse().join('-') : null,
-            notes: clean[12] || null,
+            paidAmount: (colIndex.paidAmount >= 0 && clean[colIndex.paidAmount]) ? parseFloat(clean[colIndex.paidAmount]) || 0 : 0,
+            startDate: startDate,
+            actionDate: actionDate,
+            notes: (colIndex.notes >= 0 && clean[colIndex.notes]) ? clean[colIndex.notes] : null,
           };
+          
           if (!rec.patientName) continue;
           await insertCase(userId, rec);
           count++;
         }
         resolve(count);
-      } catch (err) { reject(err); }
+      } catch (err) {
+        console.error("Import error:", err);
+        reject(err);
+      }
     };
     reader.readAsText(file);
   });
@@ -871,35 +1013,16 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose })
             )}
           </div>
           
-          {/* أزرار تغيير حالة الدفع */}
           <div className="drawer-section">
             <div className="drawer-section-title">تغيير حالة الدفع</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button 
-                className={`btn ${c.paymentStatus === "Paid" ? "btn-primary" : "btn-ghost"}`}
-                style={{ flex: 1, justifyContent: "center" }}
-                onClick={() => onUpdatePayment(c, "Paid")}
-              >
-                ✅ مدفوع
-              </button>
-              <button 
-                className={`btn ${c.paymentStatus === "Unpaid" ? "btn-primary" : "btn-ghost"}`}
-                style={{ flex: 1, justifyContent: "center" }}
-                onClick={() => onUpdatePayment(c, "Unpaid")}
-              >
-                ❌ غير مدفوع
-              </button>
-              <button 
-                className={`btn ${c.paymentStatus === "Free" ? "btn-primary" : "btn-ghost"}`}
-                style={{ flex: 1, justifyContent: "center" }}
-                onClick={() => onUpdatePayment(c, "Free")}
-              >
-                🎁 مجاناً
-              </button>
+              <button className={`btn ${c.paymentStatus === "Paid" ? "btn-primary" : "btn-ghost"}`} style={{ flex: 1, justifyContent: "center" }} onClick={() => onUpdatePayment(c, "Paid")}>✅ مدفوع</button>
+              <button className={`btn ${c.paymentStatus === "Unpaid" ? "btn-primary" : "btn-ghost"}`} style={{ flex: 1, justifyContent: "center" }} onClick={() => onUpdatePayment(c, "Unpaid")}>❌ غير مدفوع</button>
+              <button className={`btn ${c.paymentStatus === "Free" ? "btn-primary" : "btn-ghost"}`} style={{ flex: 1, justifyContent: "center" }} onClick={() => onUpdatePayment(c, "Free")}>🎁 مجاناً</button>
             </div>
           </div>
 
-          <div className="divider" style={{ margin: "12px 0" }} />
+          <div className="divider" />
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <button className="btn btn-ghost" style={{ justifyContent: "center" }} onClick={() => onEdit(c)}>✏️ تعديل الحالة</button>
@@ -993,9 +1116,7 @@ function SettingsScreen({ settings, onSave, onClose }) {
           <div className="divider" />
           <div className="settings-section">
             <div className="settings-section-title">💊 المواد والأسعار</div>
-            <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8 }}>
-              ⚠️ تغيير الأسعار هنا لن يؤثر على الحالات القديمة
-            </div>
+            <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8 }}>⚠️ تغيير الأسعار هنا لن يؤثر على الحالات القديمة</div>
             {s.materials.map(m => (
               <div key={m.id} className="settings-list-item">
                 <div>
@@ -1049,12 +1170,14 @@ export default function App() {
   const [activeBranch, setActiveBranch] = useState("all");
   const [activeTab, setActiveTab] = useState("current");
   const [search, setSearch] = useState("");
-  const [histMonth, setHistMonth] = useState("");
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [showAdd, setShowAdd] = useState(false);
   const [editCase, setEditCase] = useState(null);
   const [detailCase, setDetailCase] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [toast, setToast] = useState("");
+  const [dropdownState, setDropdownState] = useState({ caseId: null, type: null });
   const importRef = useRef();
 
   useEffect(() => {
@@ -1085,8 +1208,6 @@ export default function App() {
     setTimeout(() => setToast(""), 2500);
   }, []);
 
-  const curMonth = currentMonthKey();
-  
   const branchFiltered = useMemo(() => 
     activeBranch === "all" ? cases : cases.filter(c => c.branchName === activeBranch),
     [cases, activeBranch]
@@ -1098,20 +1219,22 @@ export default function App() {
     return branchFiltered.filter(c => c.patientName.toLowerCase().includes(q));
   }, [branchFiltered, search]);
 
-  const allMonths = useMemo(() => {
-    const months = [];
-    for (let year = DATE_RANGE.startYear; year <= DATE_RANGE.endYear; year++) {
-      for (let month = 1; month <= 12; month++) {
-        const monthStr = month.toString().padStart(2, '0');
-        months.push(`${year}-${monthStr}`);
-      }
+  const availableYears = useMemo(() => {
+    const years = [];
+    for (let y = DATE_RANGE.startYear; y <= DATE_RANGE.endYear; y++) {
+      years.push(y);
     }
-    return months.sort().reverse();
+    return years;
   }, []);
+
+  const months = [
+    "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
+    "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
+  ];
 
   const tabFiltered = useMemo(() => {
     let arr = patientSearchFiltered;
-    const targetMonth = histMonth || curMonth;
+    const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
     
     if (activeTab === "current") {
       arr = arr.filter(c => {
@@ -1127,12 +1250,13 @@ export default function App() {
     }
     
     return arr;
-  }, [patientSearchFiltered, activeTab, curMonth, histMonth]);
+  }, [patientSearchFiltered, activeTab, selectedYear, selectedMonth]);
 
   const stats = useMemo(() => {
-    const src = activeTab === "current" ? tabFiltered : patientSearchFiltered.filter(c => {
+    const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
+    const src = patientSearchFiltered.filter(c => {
       const d = c.actionDate || c.startDate || c.createdAt;
-      return monthKey(d) === (histMonth || curMonth);
+      return monthKey(d) === targetMonth;
     });
     const total = src.reduce((s, c) => s + (c.totalAmount || 0), 0);
     const paid = src.filter(c => c.paymentStatus === "Paid").reduce((s, c) => s + (c.totalAmount || 0), 0);
@@ -1150,7 +1274,7 @@ export default function App() {
       collected: paid + partial,
       count: src.length 
     };
-  }, [tabFiltered, patientSearchFiltered, activeTab, histMonth, curMonth]);
+  }, [patientSearchFiltered, selectedYear, selectedMonth]);
 
   async function handleAddCase(form) {
     const row = await insertCase(session.user.id, form);
@@ -1196,31 +1320,54 @@ export default function App() {
 
   async function handleUpdatePayment(c, newStatus) {
     if (c.paymentStatus === newStatus) return;
-    
     let updateData = { payment_status: newStatus };
-    
     if (newStatus === "Paid") {
       updateData.paid_amount = c.totalAmount;
     } else if (newStatus === "Free" || newStatus === "Unpaid") {
       updateData.paid_amount = 0;
     }
-    
     await updateCaseDB(c.id, updateData);
-    
     setCases(prev => prev.map(x => x.id === c.id ? { 
       ...x, 
       paymentStatus: newStatus,
       paidAmount: updateData.paid_amount !== undefined ? updateData.paid_amount : x.paidAmount
     } : x));
-    
-    setDetailCase(prev => prev ? { 
-      ...prev, 
-      paymentStatus: newStatus,
-      paidAmount: updateData.paid_amount !== undefined ? updateData.paid_amount : prev.paidAmount
-    } : null);
-    
+    if (detailCase && detailCase.id === c.id) {
+      setDetailCase(prev => ({ ...prev, paymentStatus: newStatus, paidAmount: updateData.paid_amount !== undefined ? updateData.paid_amount : prev?.paidAmount }));
+    }
     const msg = newStatus === "Paid" ? "✅ تم التحديد كمدفوع كامل" : (newStatus === "Free" ? "🎁 تم التحديد كمجاناً" : "❌ تم التحديد كغير مدفوع");
     showToast(msg);
+    setDropdownState({ caseId: null, type: null });
+  }
+
+  async function handleUpdateMaterial(c, newMaterialName) {
+    if (c.materialName === newMaterialName) {
+      setDropdownState({ caseId: null, type: null });
+      return;
+    }
+    const newMaterial = settings.materials.find(m => m.name === newMaterialName);
+    const newPrice = newMaterial?.price !== undefined ? newMaterial.price : c.pricePerUnit;
+    await updateCaseDB(c.id, { material_name: newMaterialName, price_per_unit: newPrice });
+    setCases(prev => prev.map(x => x.id === c.id ? { ...x, materialName: newMaterialName, pricePerUnit: newPrice, totalAmount: newPrice * x.units } : x));
+    if (detailCase && detailCase.id === c.id) {
+      setDetailCase(prev => ({ ...prev, materialName: newMaterialName, pricePerUnit: newPrice, totalAmount: newPrice * prev.units }));
+    }
+    showToast(`✅ تم تغيير المادة إلى ${newMaterialName}`);
+    setDropdownState({ caseId: null, type: null });
+  }
+
+  async function handleUpdateCaseStatus(c, newStatus) {
+    if (c.caseStatus === newStatus) {
+      setDropdownState({ caseId: null, type: null });
+      return;
+    }
+    await updateCaseDB(c.id, { case_status: newStatus });
+    setCases(prev => prev.map(x => x.id === c.id ? { ...x, caseStatus: newStatus } : x));
+    if (detailCase && detailCase.id === c.id) {
+      setDetailCase(prev => ({ ...prev, caseStatus: newStatus }));
+    }
+    showToast(`✅ تم تغيير الحالة إلى ${newStatus}`);
+    setDropdownState({ caseId: null, type: null });
   }
 
   async function handleSaveSettings(s) {
@@ -1237,28 +1384,40 @@ export default function App() {
       const fresh = await fetchCases(session.user.id);
       setCases(fresh.map(toLocal));
       showToast(`✅ تم استيراد ${count} حالة`);
-    } catch {
-      showToast("❌ خطأ في الاستيراد");
+    } catch (err) {
+      showToast(`❌ خطأ في الاستيراد: ${err.message}`);
     }
     e.target.value = "";
   }
 
   const exportWithFilter = useCallback(() => {
-    let dataToExport = tabFiltered;
-    if (activeTab === "current" && histMonth) {
-      dataToExport = patientSearchFiltered.filter(c => {
-        const d = c.actionDate || c.startDate || c.createdAt;
-        return monthKey(d) === histMonth;
-      });
-    }
+    const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
+    const dataToExport = patientSearchFiltered.filter(c => {
+      const d = c.actionDate || c.startDate || c.createdAt;
+      return monthKey(d) === targetMonth;
+    });
     exportCSV(dataToExport);
-  }, [tabFiltered, patientSearchFiltered, activeTab, histMonth]);
+  }, [patientSearchFiltered, selectedYear, selectedMonth]);
+
+  const handleCardClick = (c, e) => {
+    if (e.target.closest('.badge-clickable')) return;
+    setDetailCase(c);
+  };
+
+  const closeDropdown = useCallback(() => {
+    setDropdownState({ caseId: null, type: null });
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('click', closeDropdown);
+    return () => document.removeEventListener('click', closeDropdown);
+  }, [closeDropdown]);
 
   if (!authInit) return <div className="loading" style={{ minHeight: "100vh" }}><div className="spinner" /></div>;
   if (!session) return <LoginScreen onLogin={s => setSession(s)} />;
 
   const tabs = [
-    { id: "current", label: "📅 الشهر الحالي" },
+    { id: "current", label: "📅 الشهر المحدد" },
     { id: "active", label: "⚙️ قيد العمل" },
     { id: "missed", label: "⚠️ Missed" },
     { id: "completed", label: "✅ المنتهية" },
@@ -1284,19 +1443,30 @@ export default function App() {
             <option value="all">🏥 كل الفروع</option>
             {settings.branches.map(b => <option key={b} value={b}>{b}</option>)}
           </select>
-          <span className="branch-label" style={{ marginRight: 8 }}>الشهر:</span>
-          <select className="month-select" value={histMonth} onChange={e => setHistMonth(e.target.value)}>
-            <option value="">كل الشهور</option>
-            {allMonths.map(m => {
-              const [y, mo] = m.split("-");
-              const names = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-              return <option key={m} value={m}>{names[parseInt(mo) - 1]} {y}</option>;
+        </div>
+        <div style={{ padding: "8px 24px 0" }}>
+          <div className="year-selector">
+            {availableYears.map(year => (
+              <button key={year} className={`year-btn ${selectedYear === year ? "active" : ""}`} onClick={() => { setSelectedYear(year); setSelectedMonth(1); }}>
+                {year}
+              </button>
+            ))}
+          </div>
+          <div className="months-grid">
+            {months.map((month, index) => {
+              const monthNum = index + 1;
+              const isActive = selectedYear === new Date().getFullYear() ? (selectedMonth === monthNum) : (monthNum === 1);
+              return (
+                <button key={month} className={`month-btn ${selectedMonth === monthNum ? "active" : ""}`} onClick={() => setSelectedMonth(monthNum)}>
+                  {month}
+                </button>
+              );
             })}
-          </select>
+          </div>
         </div>
         <div className="tabs">
           {tabs.map(t => (
-            <button key={t.id} className={`tab${activeTab === t.id ? " active" : ""}`} onClick={() => { setActiveTab(t.id); setHistMonth(""); }}>
+            <button key={t.id} className={`tab${activeTab === t.id ? " active" : ""}`} onClick={() => setActiveTab(t.id)}>
               {t.label}
             </button>
           ))}
@@ -1319,11 +1489,7 @@ export default function App() {
         </div>
         <div className="toolbar">
           <div className="search-wrap">
-            <input 
-              value={search} 
-              onChange={e => setSearch(e.target.value)} 
-              placeholder="🔍 بحث باسم المريض (يجلب كل حالاته)..." 
-            />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 بحث باسم المريض (يجلب كل حالاته)..." />
           </div>
         </div>
         {loading ? <Spinner /> : tabFiltered.length === 0 ? (
@@ -1345,29 +1511,68 @@ export default function App() {
                 return "غير مدفوع";
               };
               return (
-                <div key={c.id} className="case-card fade-up" style={{ "--status-color": sm.color, animationDelay: `${Math.min(i, 12) * 0.04}s` }} onClick={() => setDetailCase(c)}>
-                  <div className="case-card-header">
-                    <div><div className="case-name">{c.patientName}</div><div className="case-date">{fmtDate(c.startDate)}</div></div>
-                    <span className="case-branch">{c.branchName}</span>
-                  </div>
-                  <div className="case-badges">
-                    <Badge label={c.caseStatus} color={sm.color} bg={sm.bg} icon={sm.icon} />
-                    <Badge label={c.materialName} color={mc} bg={mc + "20"} />
-                    <Badge 
-                      label={getPaymentLabel(c.paymentStatus, c.paidAmount)} 
-                      color={c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)"))} 
-                      bg={c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : (c.paymentStatus === "Partial" ? "rgba(155,142,255,.12)" : "rgba(239,68,68,.12)"))} 
-                    />
-                  </div>
-                  <div className="case-footer">
-                    <div>
-                      <div className="case-amount" style={{ color: "var(--gold)" }}>{fmtMoney(c.totalAmount)} ج.م</div>
-                      <div className="case-units">{c.units} وحدة × {c.pricePerUnit}</div>
+                <div key={c.id} className="case-card fade-up" style={{ "--status-color": sm.color, animationDelay: `${Math.min(i, 12) * 0.04}s` }}>
+                  <div className="case-clickable-area" onClick={(e) => handleCardClick(c, e)}>
+                    <div className="case-card-header">
+                      <div><div className="case-name">{c.patientName}</div><div className="case-date">{fmtDate(c.startDate)}</div></div>
+                      <span className="case-branch">{c.branchName}</span>
                     </div>
-                    {c.paymentStatus === "Partial" && (
-                      <div style={{ fontSize: 10, color: "var(--mint)" }}>محصل: {fmtMoney(c.paidAmount)}</div>
-                    )}
+                    <div className="case-badges">
+                      <ClickableBadge 
+                        label={c.caseStatus} 
+                        color={sm.color} 
+                        bg={sm.bg} 
+                        icon={sm.icon}
+                        onClick={(e) => { e.stopPropagation(); setDropdownState({ caseId: c.id, type: 'status' }); }}
+                      />
+                      <ClickableBadge 
+                        label={c.materialName} 
+                        color={mc} 
+                        bg={mc + "20"}
+                        onClick={(e) => { e.stopPropagation(); setDropdownState({ caseId: c.id, type: 'material' }); }}
+                      />
+                      <ClickableBadge 
+                        label={getPaymentLabel(c.paymentStatus, c.paidAmount)} 
+                        color={c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)"))} 
+                        bg={c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : (c.paymentStatus === "Partial" ? "rgba(155,142,255,.12)" : "rgba(239,68,68,.12)"))}
+                        onClick={(e) => { e.stopPropagation(); setDropdownState({ caseId: c.id, type: 'payment' }); }}
+                      />
+                    </div>
+                    <div className="case-footer">
+                      <div><div className="case-amount" style={{ color: "var(--gold)" }}>{fmtMoney(c.totalAmount)} ج.م</div><div className="case-units">{c.units} وحدة × {c.pricePerUnit}</div></div>
+                      {c.paymentStatus === "Partial" && (<div style={{ fontSize: 10, color: "var(--mint)" }}>محصل: {fmtMoney(c.paidAmount)}</div>)}
+                    </div>
                   </div>
+                  
+                  {dropdownState.caseId === c.id && dropdownState.type === 'status' && (
+                    <div className="dropdown-menu" style={{ position: 'absolute', marginTop: 4 }}>
+                      {settings.caseStatuses.map(s => (
+                        <div key={s.id} className="dropdown-item" onClick={() => handleUpdateCaseStatus(c, s.name)}>
+                          {STATUS_META[s.name]?.icon} {s.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {dropdownState.caseId === c.id && dropdownState.type === 'material' && (
+                    <div className="dropdown-menu" style={{ position: 'absolute', marginTop: 4 }}>
+                      {settings.materials.map(m => (
+                        <div key={m.id} className="dropdown-item" onClick={() => handleUpdateMaterial(c, m.name)}>
+                          {m.name} {m.price ? `(${m.price})` : '(سعر حر)'}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {dropdownState.caseId === c.id && dropdownState.type === 'payment' && (
+                    <div className="dropdown-menu" style={{ position: 'absolute', marginTop: 4 }}>
+                      {settings.paymentStatuses.filter(s => s.name !== "Partial").map(s => (
+                        <div key={s.id} className="dropdown-item" onClick={() => handleUpdatePayment(c, s.name)}>
+                          {s.name === "Paid" ? "✅ مدفوع كامل" : (s.name === "Free" ? "🎁 مجاناً" : "❌ غير مدفوع")}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -1377,14 +1582,7 @@ export default function App() {
       <button className="btn-fab" onClick={() => setShowAdd(true)}>＋</button>
       {showAdd && <CaseModal settings={settings} defaultBranch={activeBranch !== "all" ? activeBranch : settings.branches[0]} onSave={handleAddCase} onClose={() => setShowAdd(false)} />}
       {editCase && <CaseModal existing={editCase} settings={settings} defaultBranch={editCase.branchName} onSave={handleEditCase} onClose={() => setEditCase(null)} />}
-      {detailCase && <CaseDrawer 
-        c={detailCase} 
-        settings={settings} 
-        onEdit={c => { setEditCase(c); setDetailCase(null); }} 
-        onDelete={handleDelete} 
-        onUpdatePayment={handleUpdatePayment}
-        onClose={() => setDetailCase(null)} 
-      />}
+      {detailCase && <CaseDrawer c={detailCase} settings={settings} onEdit={c => { setEditCase(c); setDetailCase(null); }} onDelete={handleDelete} onUpdatePayment={handleUpdatePayment} onClose={() => setDetailCase(null)} />}
       {showSettings && <SettingsScreen settings={settings} onSave={handleSaveSettings} onClose={() => setShowSettings(false)} />}
       <Toast msg={toast} />
     </>
