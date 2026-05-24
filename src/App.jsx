@@ -53,7 +53,6 @@ const todayISO = () => new Date().toISOString().split("T")[0];
 const fmtMoney = (n) => Number(n || 0).toLocaleString("ar-EG");
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString("ar-EG", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 const monthKey = (d) => d ? d.slice(0, 7) : "";
-const currentMonthKey = () => new Date().toISOString().slice(0, 7);
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -166,52 +165,57 @@ body {
 }
 .branch-select:focus { border-color: var(--accent); }
 
-.year-selector {
+/* Year/Month Selector - New Style */
+.year-month-container {
+  padding: 8px 24px;
+  border-bottom: 1px solid var(--border);
   display: flex;
-  gap: 8px;
-  align-items: center;
+  gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 8px;
 }
-.year-btn {
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: var(--r2);
+.years-column {
+  min-width: 80px;
+  border-left: 1px solid var(--border);
+  padding-left: 12px;
+}
+.year-item {
   padding: 6px 12px;
+  margin: 2px 0;
+  border-radius: var(--r2);
+  cursor: pointer;
   font-size: 13px;
   font-weight: 700;
-  cursor: pointer;
   transition: all .15s;
 }
-.year-btn:hover {
-  border-color: var(--accent);
+.year-item:hover {
+  background: var(--surface2);
   color: var(--accent);
 }
-.year-btn.active {
+.year-item.active {
   background: var(--accent);
-  border-color: var(--accent);
   color: #fff;
 }
-.months-grid {
+.months-column {
+  flex: 1;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
+  gap: 8px;
+  align-content: flex-start;
 }
-.month-btn {
+.month-item {
+  padding: 6px 14px;
+  border-radius: var(--r2);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all .15s;
   background: var(--surface2);
   border: 1px solid var(--border2);
-  border-radius: var(--r2);
-  padding: 4px 10px;
-  font-size: 11px;
-  cursor: pointer;
-  transition: all .15s;
 }
-.month-btn:hover {
+.month-item:hover {
   border-color: var(--accent);
   color: var(--accent);
 }
-.month-btn.active {
+.month-item.active {
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
@@ -284,7 +288,7 @@ body {
   border-radius: var(--r);
   padding: 16px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   transition: all .18s;
 }
 .case-card:hover { border-color: var(--border2); transform: translateY(-2px); }
@@ -301,7 +305,7 @@ body {
 .case-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
 .case-name { font-size: 15px; font-weight: 700; color: var(--text); }
 .case-date { font-size: 11px; color: var(--text3); margin-top: 2px; }
-.case-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.case-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; position: relative; }
 .case-footer { display: flex; justify-content: space-between; align-items: center; }
 .case-amount { font-size: 18px; font-weight: 800; }
 .case-units { font-size: 11px; color: var(--text3); }
@@ -319,6 +323,7 @@ body {
   cursor: pointer;
   transition: all .15s;
   border: 1px solid transparent;
+  position: relative;
 }
 .badge-clickable:hover {
   transform: scale(1.02);
@@ -338,12 +343,12 @@ body {
 }
 
 .dropdown-menu {
-  position: absolute;
+  position: fixed;
   background: var(--surface2);
   border: 1px solid var(--border2);
   border-radius: var(--r2);
-  z-index: 200;
-  min-width: 120px;
+  z-index: 1000;
+  min-width: 140px;
   box-shadow: 0 8px 24px rgba(0,0,0,.4);
   overflow: hidden;
 }
@@ -503,6 +508,8 @@ body {
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .cases-grid { grid-template-columns: 1fr; }
   .form-row { grid-template-columns: 1fr; }
+  .year-month-container { flex-direction: column; }
+  .years-column { border-left: none; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 6px; }
 }
 `;
 
@@ -511,16 +518,6 @@ function Badge({ label, color, bg, icon }) {
     <span className="badge" style={{ color, background: bg, border: `1px solid ${color}30` }}>
       {icon && <span>{icon}</span>}
       {label}
-    </span>
-  );
-}
-
-function ClickableBadge({ label, color, bg, icon, onClick }) {
-  return (
-    <span className="badge-clickable" style={{ color, background: bg, border: `1px solid ${color}30` }} onClick={onClick}>
-      {icon && <span>{icon}</span>}
-      {label}
-      <span style={{ fontSize: 10, marginRight: 4 }}>▼</span>
     </span>
   );
 }
@@ -614,7 +611,6 @@ const toLocal = (r) => ({
   createdAt: r.created_at,
 });
 
-// دالة التصدير - نفس تنسيق الاستيراد بالضبط
 function exportCSV(casesToExport) {
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
@@ -652,7 +648,6 @@ async function importCSV(file, userId, currentBranch) {
         const lines = text.split("\n");
         const headers = lines[0].split(",").map(h => h.replace(/^"|"$/g, "").trim());
         
-        // تحديد أعمدة CSV بناءً على العناوين
         const colIndex = {
           branch: headers.findIndex(h => h.includes("الفرع")),
           patient: headers.findIndex(h => h.includes("المريض")),
@@ -672,7 +667,6 @@ async function importCSV(file, userId, currentBranch) {
           const line = lines[i].trim();
           if (!line) continue;
           
-          // استخدام regex لقراءة CSV بشكل صحيح
           const cols = line.match(/(".*?"|[^,]+)(?=,|$)/g);
           if (!cols || cols.length < 5) continue;
           
@@ -1170,14 +1164,14 @@ export default function App() {
   const [activeBranch, setActiveBranch] = useState("all");
   const [activeTab, setActiveTab] = useState("current");
   const [search, setSearch] = useState("");
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(2025);
+  const [selectedMonth, setSelectedMonth] = useState(5);
   const [showAdd, setShowAdd] = useState(false);
   const [editCase, setEditCase] = useState(null);
   const [detailCase, setDetailCase] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [toast, setToast] = useState("");
-  const [dropdownState, setDropdownState] = useState({ caseId: null, type: null });
+  const [dropdownState, setDropdownState] = useState({ caseId: null, type: null, x: 0, y: 0 });
   const importRef = useRef();
 
   useEffect(() => {
@@ -1337,12 +1331,12 @@ export default function App() {
     }
     const msg = newStatus === "Paid" ? "✅ تم التحديد كمدفوع كامل" : (newStatus === "Free" ? "🎁 تم التحديد كمجاناً" : "❌ تم التحديد كغير مدفوع");
     showToast(msg);
-    setDropdownState({ caseId: null, type: null });
+    setDropdownState({ caseId: null, type: null, x: 0, y: 0 });
   }
 
   async function handleUpdateMaterial(c, newMaterialName) {
     if (c.materialName === newMaterialName) {
-      setDropdownState({ caseId: null, type: null });
+      setDropdownState({ caseId: null, type: null, x: 0, y: 0 });
       return;
     }
     const newMaterial = settings.materials.find(m => m.name === newMaterialName);
@@ -1353,12 +1347,12 @@ export default function App() {
       setDetailCase(prev => ({ ...prev, materialName: newMaterialName, pricePerUnit: newPrice, totalAmount: newPrice * prev.units }));
     }
     showToast(`✅ تم تغيير المادة إلى ${newMaterialName}`);
-    setDropdownState({ caseId: null, type: null });
+    setDropdownState({ caseId: null, type: null, x: 0, y: 0 });
   }
 
   async function handleUpdateCaseStatus(c, newStatus) {
     if (c.caseStatus === newStatus) {
-      setDropdownState({ caseId: null, type: null });
+      setDropdownState({ caseId: null, type: null, x: 0, y: 0 });
       return;
     }
     await updateCaseDB(c.id, { case_status: newStatus });
@@ -1367,7 +1361,7 @@ export default function App() {
       setDetailCase(prev => ({ ...prev, caseStatus: newStatus }));
     }
     showToast(`✅ تم تغيير الحالة إلى ${newStatus}`);
-    setDropdownState({ caseId: null, type: null });
+    setDropdownState({ caseId: null, type: null, x: 0, y: 0 });
   }
 
   async function handleSaveSettings(s) {
@@ -1390,22 +1384,41 @@ export default function App() {
     e.target.value = "";
   }
 
-  const exportWithFilter = useCallback(() => {
+  // تصدير الشهر المحدد
+  const exportCurrentMonth = useCallback(() => {
     const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
     const dataToExport = patientSearchFiltered.filter(c => {
       const d = c.actionDate || c.startDate || c.createdAt;
       return monthKey(d) === targetMonth;
     });
     exportCSV(dataToExport);
-  }, [patientSearchFiltered, selectedYear, selectedMonth]);
+    showToast(`✅ تم تصدير ${dataToExport.length} حالة لشهر ${selectedMonth}/${selectedYear}`);
+  }, [patientSearchFiltered, selectedYear, selectedMonth, showToast]);
+
+  // تصدير كل الحالات
+  const exportAll = useCallback(() => {
+    exportCSV(patientSearchFiltered);
+    showToast(`✅ تم تصدير ${patientSearchFiltered.length} حالة (كل الحالات)`);
+  }, [patientSearchFiltered, showToast]);
 
   const handleCardClick = (c, e) => {
     if (e.target.closest('.badge-clickable')) return;
     setDetailCase(c);
   };
 
+  const handleBadgeClick = (e, caseId, type) => {
+    e.stopPropagation();
+    const rect = e.target.getBoundingClientRect();
+    setDropdownState({
+      caseId: caseId,
+      type: type,
+      x: rect.left,
+      y: rect.bottom + 5
+    });
+  };
+
   const closeDropdown = useCallback(() => {
-    setDropdownState({ caseId: null, type: null });
+    setDropdownState({ caseId: null, type: null, x: 0, y: 0 });
   }, []);
 
   useEffect(() => {
@@ -1432,7 +1445,8 @@ export default function App() {
           <div className="header-actions">
             <input type="file" ref={importRef} accept=".csv" style={{ display: "none" }} onChange={handleImport} />
             <button className="btn btn-ghost btn-sm" onClick={() => importRef.current?.click()}>📥 استيراد</button>
-            <button className="btn btn-ghost btn-sm" onClick={exportWithFilter}>📤 تصدير</button>
+            <button className="btn btn-ghost btn-sm" onClick={exportCurrentMonth}>📤 تصدير الشهر</button>
+            <button className="btn btn-primary btn-sm" onClick={exportAll}>📤 تصدير الكل</button>
             <button className="btn btn-ghost btn-icon" onClick={() => setShowSettings(true)}>⚙️</button>
             <button className="btn btn-ghost btn-sm" onClick={() => supabase.auth.signOut()}>خروج</button>
           </div>
@@ -1444,26 +1458,27 @@ export default function App() {
             {settings.branches.map(b => <option key={b} value={b}>{b}</option>)}
           </select>
         </div>
-        <div style={{ padding: "8px 24px 0" }}>
-          <div className="year-selector">
+        
+        <div className="year-month-container">
+          <div className="years-column">
             {availableYears.map(year => (
-              <button key={year} className={`year-btn ${selectedYear === year ? "active" : ""}`} onClick={() => { setSelectedYear(year); setSelectedMonth(1); }}>
+              <div key={year} className={`year-item ${selectedYear === year ? "active" : ""}`} onClick={() => { setSelectedYear(year); setSelectedMonth(1); }}>
                 {year}
-              </button>
+              </div>
             ))}
           </div>
-          <div className="months-grid">
+          <div className="months-column">
             {months.map((month, index) => {
               const monthNum = index + 1;
-              const isActive = selectedYear === new Date().getFullYear() ? (selectedMonth === monthNum) : (monthNum === 1);
               return (
-                <button key={month} className={`month-btn ${selectedMonth === monthNum ? "active" : ""}`} onClick={() => setSelectedMonth(monthNum)}>
+                <div key={month} className={`month-item ${selectedMonth === monthNum ? "active" : ""}`} onClick={() => setSelectedMonth(monthNum)}>
                   {month}
-                </button>
+                </div>
               );
             })}
           </div>
         </div>
+
         <div className="tabs">
           {tabs.map(t => (
             <button key={t.id} className={`tab${activeTab === t.id ? " active" : ""}`} onClick={() => setActiveTab(t.id)}>
@@ -1518,25 +1533,31 @@ export default function App() {
                       <span className="case-branch">{c.branchName}</span>
                     </div>
                     <div className="case-badges">
-                      <ClickableBadge 
-                        label={c.caseStatus} 
-                        color={sm.color} 
-                        bg={sm.bg} 
-                        icon={sm.icon}
-                        onClick={(e) => { e.stopPropagation(); setDropdownState({ caseId: c.id, type: 'status' }); }}
-                      />
-                      <ClickableBadge 
-                        label={c.materialName} 
-                        color={mc} 
-                        bg={mc + "20"}
-                        onClick={(e) => { e.stopPropagation(); setDropdownState({ caseId: c.id, type: 'material' }); }}
-                      />
-                      <ClickableBadge 
-                        label={getPaymentLabel(c.paymentStatus, c.paidAmount)} 
-                        color={c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)"))} 
-                        bg={c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : (c.paymentStatus === "Partial" ? "rgba(155,142,255,.12)" : "rgba(239,68,68,.12)"))}
-                        onClick={(e) => { e.stopPropagation(); setDropdownState({ caseId: c.id, type: 'payment' }); }}
-                      />
+                      <span 
+                        className="badge-clickable" 
+                        style={{ color: sm.color, background: sm.bg, border: `1px solid ${sm.color}30` }}
+                        onClick={(e) => handleBadgeClick(e, c.id, 'status')}
+                      >
+                        {sm.icon} {c.caseStatus} ▼
+                      </span>
+                      <span 
+                        className="badge-clickable" 
+                        style={{ color: mc, background: mc + "20", border: `1px solid ${mc}30` }}
+                        onClick={(e) => handleBadgeClick(e, c.id, 'material')}
+                      >
+                        {c.materialName} ▼
+                      </span>
+                      <span 
+                        className="badge-clickable" 
+                        style={{ 
+                          color: c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)")),
+                          background: c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : (c.paymentStatus === "Partial" ? "rgba(155,142,255,.12)" : "rgba(239,68,68,.12)")),
+                          border: `1px solid ${c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)"))}30`
+                        }}
+                        onClick={(e) => handleBadgeClick(e, c.id, 'payment')}
+                      >
+                        {getPaymentLabel(c.paymentStatus, c.paidAmount)} ▼
+                      </span>
                     </div>
                     <div className="case-footer">
                       <div><div className="case-amount" style={{ color: "var(--gold)" }}>{fmtMoney(c.totalAmount)} ج.م</div><div className="case-units">{c.units} وحدة × {c.pricePerUnit}</div></div>
@@ -1545,7 +1566,7 @@ export default function App() {
                   </div>
                   
                   {dropdownState.caseId === c.id && dropdownState.type === 'status' && (
-                    <div className="dropdown-menu" style={{ position: 'absolute', marginTop: 4 }}>
+                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 1000 }}>
                       {settings.caseStatuses.map(s => (
                         <div key={s.id} className="dropdown-item" onClick={() => handleUpdateCaseStatus(c, s.name)}>
                           {STATUS_META[s.name]?.icon} {s.name}
@@ -1555,7 +1576,7 @@ export default function App() {
                   )}
                   
                   {dropdownState.caseId === c.id && dropdownState.type === 'material' && (
-                    <div className="dropdown-menu" style={{ position: 'absolute', marginTop: 4 }}>
+                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 1000 }}>
                       {settings.materials.map(m => (
                         <div key={m.id} className="dropdown-item" onClick={() => handleUpdateMaterial(c, m.name)}>
                           {m.name} {m.price ? `(${m.price})` : '(سعر حر)'}
@@ -1565,7 +1586,7 @@ export default function App() {
                   )}
                   
                   {dropdownState.caseId === c.id && dropdownState.type === 'payment' && (
-                    <div className="dropdown-menu" style={{ position: 'absolute', marginTop: 4 }}>
+                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 1000 }}>
                       {settings.paymentStatuses.filter(s => s.name !== "Partial").map(s => (
                         <div key={s.id} className="dropdown-item" onClick={() => handleUpdatePayment(c, s.name)}>
                           {s.name === "Paid" ? "✅ مدفوع كامل" : (s.name === "Free" ? "🎁 مجاناً" : "❌ غير مدفوع")}
