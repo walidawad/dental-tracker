@@ -165,60 +165,37 @@ body {
 }
 .branch-select:focus { border-color: var(--accent); }
 
-/* Year/Month Selector - New Style */
-.year-month-container {
+.month-selector-wrapper {
   padding: 8px 24px;
   border-bottom: 1px solid var(--border);
   display: flex;
-  gap: 16px;
+  gap: 12px;
+  align-items: center;
   flex-wrap: wrap;
 }
-.years-column {
-  min-width: 80px;
-  border-left: 1px solid var(--border);
-  padding-left: 12px;
-}
-.year-item {
-  padding: 6px 12px;
-  margin: 2px 0;
-  border-radius: var(--r2);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 700;
-  transition: all .15s;
-}
-.year-item:hover {
-  background: var(--surface2);
-  color: var(--accent);
-}
-.year-item.active {
-  background: var(--accent);
-  color: #fff;
-}
-.months-column {
-  flex: 1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-content: flex-start;
-}
-.month-item {
-  padding: 6px 14px;
-  border-radius: var(--r2);
-  cursor: pointer;
-  font-size: 12px;
-  transition: all .15s;
+.year-select {
   background: var(--surface2);
   border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  color: var(--text);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 12px;
+  outline: none;
+  cursor: pointer;
 }
-.month-item:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.month-item.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+.month-select {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  color: var(--text);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 12px;
+  outline: none;
+  cursor: pointer;
 }
 
 .tabs {
@@ -508,8 +485,7 @@ body {
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .cases-grid { grid-template-columns: 1fr; }
   .form-row { grid-template-columns: 1fr; }
-  .year-month-container { flex-direction: column; }
-  .years-column { border-left: none; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 6px; }
+  .month-selector-wrapper { flex-direction: column; align-items: flex-start; }
 }
 `;
 
@@ -1207,6 +1183,7 @@ export default function App() {
     [cases, activeBranch]
   );
 
+  // البحث في جميع الحالات (بدون فلتر شهر)
   const patientSearchFiltered = useMemo(() => {
     if (!search.trim()) return branchFiltered;
     const q = search.toLowerCase().trim();
@@ -1226,11 +1203,12 @@ export default function App() {
     "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
   ];
 
+  // تطبيق فلتر الشهر بعد البحث
   const tabFiltered = useMemo(() => {
     let arr = patientSearchFiltered;
-    const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
     
     if (activeTab === "current") {
+      const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
       arr = arr.filter(c => {
         const d = c.actionDate || c.startDate || c.createdAt;
         return monthKey(d) === targetMonth;
@@ -1384,7 +1362,6 @@ export default function App() {
     e.target.value = "";
   }
 
-  // تصدير الشهر المحدد
   const exportCurrentMonth = useCallback(() => {
     const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
     const dataToExport = patientSearchFiltered.filter(c => {
@@ -1395,7 +1372,6 @@ export default function App() {
     showToast(`✅ تم تصدير ${dataToExport.length} حالة لشهر ${selectedMonth}/${selectedYear}`);
   }, [patientSearchFiltered, selectedYear, selectedMonth, showToast]);
 
-  // تصدير كل الحالات
   const exportAll = useCallback(() => {
     exportCSV(patientSearchFiltered);
     showToast(`✅ تم تصدير ${patientSearchFiltered.length} حالة (كل الحالات)`);
@@ -1459,24 +1435,20 @@ export default function App() {
           </select>
         </div>
         
-        <div className="year-month-container">
-          <div className="years-column">
+        <div className="month-selector-wrapper">
+          <span className="branch-label">السنة:</span>
+          <select className="year-select" value={selectedYear} onChange={e => setSelectedYear(parseInt(e.target.value))}>
             {availableYears.map(year => (
-              <div key={year} className={`year-item ${selectedYear === year ? "active" : ""}`} onClick={() => { setSelectedYear(year); setSelectedMonth(1); }}>
-                {year}
-              </div>
+              <option key={year} value={year}>{year}</option>
             ))}
-          </div>
-          <div className="months-column">
-            {months.map((month, index) => {
-              const monthNum = index + 1;
-              return (
-                <div key={month} className={`month-item ${selectedMonth === monthNum ? "active" : ""}`} onClick={() => setSelectedMonth(monthNum)}>
-                  {month}
-                </div>
-              );
-            })}
-          </div>
+          </select>
+          
+          <span className="branch-label" style={{ marginRight: 8 }}>الشهر:</span>
+          <select className="month-select" value={selectedMonth} onChange={e => setSelectedMonth(parseInt(e.target.value))}>
+            {months.map((month, index) => (
+              <option key={index} value={index + 1}>{month}</option>
+            ))}
+          </select>
         </div>
 
         <div className="tabs">
@@ -1504,7 +1476,11 @@ export default function App() {
         </div>
         <div className="toolbar">
           <div className="search-wrap">
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 بحث باسم المريض (يجلب كل حالاته)..." />
+            <input 
+              value={search} 
+              onChange={e => setSearch(e.target.value)} 
+              placeholder="🔍 بحث باسم المريض (جميع الحالات)..." 
+            />
           </div>
         </div>
         {loading ? <Spinner /> : tabFiltered.length === 0 ? (
