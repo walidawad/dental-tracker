@@ -24,7 +24,8 @@ const DEFAULT_SETTINGS = {
   paymentStatuses: [
     { id: "ps_1", name: "Paid" },
     { id: "ps_2", name: "Unpaid" },
-    { id: "ps_3", name: "Free" },
+    { id: "ps_3", name: "Partial" },
+    { id: "ps_4", name: "Free" },
   ],
 };
 
@@ -41,6 +42,11 @@ const MAT_COLORS = {
   "E-max": "#A78BFA",
   "PMMA": "#F59E0B",
   "Other / أخرى": "#10B981",
+};
+
+const DATE_RANGE = {
+  startYear: 2024,
+  endYear: 2030
 };
 
 const todayISO = () => new Date().toISOString().split("T")[0];
@@ -382,6 +388,8 @@ body {
   background: var(--surface2); border: 1px solid var(--border);
   border-radius: var(--r2); margin-bottom: 6px;
 }
+.settings-list-item-name { font-size: 13px; font-weight: 600; }
+.settings-list-item-sub { font-size: 11px; color: var(--text2); }
 
 .toast {
   position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
@@ -471,6 +479,7 @@ async function insertCase(userId, c) {
     units: c.units,
     case_status: c.caseStatus,
     payment_status: c.paymentStatus,
+    paid_amount: c.paidAmount || 0,
     start_date: c.startDate,
     action_date: c.actionDate || null,
     notes: c.notes || null,
@@ -496,13 +505,13 @@ const toLocal = (r) => ({
   totalAmount: r.total_amount,
   caseStatus: r.case_status,
   paymentStatus: r.payment_status,
+  paidAmount: r.paid_amount || 0,
   startDate: r.start_date,
   actionDate: r.action_date,
   notes: r.notes,
   createdAt: r.created_at,
 });
 
-// دالة التصدير مع تاريخ عربي
 function exportCSV(casesToExport) {
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
@@ -510,13 +519,14 @@ function exportCSV(casesToExport) {
     return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
   };
 
-  const getPaymentText = (status) => {
-    if (status === "Paid") return "مدفوع";
+  const getPaymentText = (status, paidAmount) => {
+    if (status === "Paid") return "مدفوع كامل";
     if (status === "Free") return "مجاناً";
+    if (status === "Partial") return `مدفوع جزئي (${fmtMoney(paidAmount)} ج.م)`;
     return "غير مدفوع";
   };
 
-  const headers = ["الفرع", "المريض", "المادة", "السعر", "الوحدات", "الإجمالي", "الحالة", "الدفع", "البداية", "الإجراء", "ملاحظات"];
+  const headers = ["الفرع", "المريض", "المادة", "السعر", "الوحدات", "الإجمالي", "المحصل", "المتبقي", "الحالة", "الدفع", "البداية", "الإجراء", "ملاحظات"];
   const rows = casesToExport.map(c => [
     c.branchName,
     c.patientName,
@@ -524,8 +534,10 @@ function exportCSV(casesToExport) {
     c.pricePerUnit,
     c.units,
     c.totalAmount,
+    c.paidAmount || 0,
+    (c.totalAmount - (c.paidAmount || 0)),
     c.caseStatus,
-    getPaymentText(c.paymentStatus),
+    getPaymentText(c.paymentStatus, c.paidAmount),
     formatDate(c.startDate),
     formatDate(c.actionDate) || "",
     c.notes || ""
@@ -551,8 +563,9 @@ async function importCSV(file, userId, currentBranch) {
           const clean = cols.map(c => c.replace(/^"|"$/g, "").trim());
           
           let paymentStatus = clean[7] || "Unpaid";
-          if (paymentStatus === "مدفوع") paymentStatus = "Paid";
+          if (paymentStatus === "مدفوع" || paymentStatus === "مدفوع كامل") paymentStatus = "Paid";
           if (paymentStatus === "مجاناً") paymentStatus = "Free";
+          if (paymentStatus.includes("مدفوع جزئي")) paymentStatus = "Partial";
           if (paymentStatus === "غير مدفوع") paymentStatus = "Unpaid";
           
           const rec = {
@@ -561,11 +574,12 @@ async function importCSV(file, userId, currentBranch) {
             materialName: clean[2],
             pricePerUnit: parseFloat(clean[3]) || 0,
             units: parseInt(clean[4]) || 0,
-            caseStatus: clean[6] || "In progress",
+            caseStatus: clean[8] || "In progress",
             paymentStatus: paymentStatus,
-            startDate: clean[8] ? clean[8].split('/').reverse().join('-') : todayISO(),
-            actionDate: clean[9] ? clean[9].split('/').reverse().join('-') : null,
-            notes: clean[10] || null,
+            paidAmount: parseFloat(clean[6]) || 0,
+            startDate: clean[10] ? clean[10].split('/').reverse().join('-') : todayISO(),
+            actionDate: clean[11] ? clean[11].split('/').reverse().join('-') : null,
+            notes: clean[12] || null,
           };
           if (!rec.patientName) continue;
           await insertCase(userId, rec);
@@ -648,6 +662,7 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
     units: existing?.units || 1,
     caseStatus: existing?.caseStatus || "In progress",
     paymentStatus: existing?.paymentStatus || "Unpaid",
+    paidAmount: existing?.paidAmount || 0,
     startDate: existing?.startDate || todayISO(),
     actionDate: existing?.actionDate || "",
     notes: existing?.notes || "",
@@ -655,6 +670,7 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
   const [prevStatus, setPrevStatus] = useState(existing?.caseStatus || "In progress");
   const [loading, setLoading] = useState(false);
   const total = (form.pricePerUnit || 0) * (form.units || 0);
+  const remaining = total - (form.paidAmount || 0);
   const selMat = settings.materials.find(m => m.name === form.materialName);
   const priceFixed = selMat?.price !== null && selMat?.price !== undefined;
 
@@ -742,10 +758,19 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
             <div className="form-group">
               <label className="form-label">حالة الدفع</label>
               <select className="form-input" value={form.paymentStatus} onChange={e => setForm(f => ({ ...f, paymentStatus: e.target.value }))}>
-                {settings.paymentStatuses.map(s => <option key={s.id} value={s.name}>{s.name === "Paid" ? "مدفوع" : (s.name === "Free" ? "مجاناً" : "غير مدفوع")}</option>)}
+                {settings.paymentStatuses.map(s => <option key={s.id} value={s.name}>{s.name === "Paid" ? "مدفوع كامل" : (s.name === "Free" ? "مجاناً" : (s.name === "Partial" ? "مدفوع جزئي" : "غير مدفوع"))}</option>)}
               </select>
             </div>
           </div>
+          {form.paymentStatus === "Partial" && (
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">المبلغ المحصل</label>
+                <input className="form-input" type="number" value={form.paidAmount} onChange={e => setForm(f => ({ ...f, paidAmount: parseFloat(e.target.value) || 0 }))} placeholder="المبلغ المدفوع" />
+                <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 4 }}>المتبقي: {remaining.toLocaleString("ar-EG")} ج.م</div>
+              </div>
+            </div>
+          )}
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">تاريخ البداية</label>
@@ -775,10 +800,12 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
 function CaseDrawer({ c, settings, onEdit, onDelete, onTogglePay, onClose }) {
   const sm = STATUS_META[c.caseStatus] || {};
   const mc = MAT_COLORS[c.materialName] || "var(--mint)";
+  const remaining = (c.totalAmount || 0) - (c.paidAmount || 0);
   
   const getPaymentLabel = (status) => {
-    if (status === "Paid") return "مدفوع";
+    if (status === "Paid") return "مدفوع كامل";
     if (status === "Free") return "مجاناً";
+    if (status === "Partial") return `مدفوع جزئي (${fmtMoney(c.paidAmount)} ج.م)`;
     return "غير مدفوع";
   };
 
@@ -794,8 +821,8 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onTogglePay, onClose }) {
               <Badge label={c.materialName} color={mc} bg={mc + "20"} />
               <Badge 
                 label={getPaymentLabel(c.paymentStatus)} 
-                color={c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : "var(--rose)")} 
-                bg={c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : "rgba(239,68,68,.12)")} 
+                color={c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)"))} 
+                bg={c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : (c.paymentStatus === "Partial" ? "rgba(155,142,255,.12)" : "rgba(239,68,68,.12)"))} 
               />
             </div>
           </div>
@@ -811,6 +838,18 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onTogglePay, onClose }) {
               </div>
               <div style={{ fontSize: 26, fontWeight: 900, color: "var(--gold)", fontFamily: "JetBrains Mono" }}>{fmtMoney(c.totalAmount)} ج.م</div>
             </div>
+            {c.paymentStatus === "Partial" && (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderTop: "1px solid var(--border)" }}>
+                <div>
+                  <div style={{ fontSize: 11, color: "var(--text2)" }}>المحصل</div>
+                  <div style={{ fontSize: 11, color: "var(--mint)" }}>{fmtMoney(c.paidAmount)} ج.م</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: "var(--text2)" }}>المتبقي</div>
+                  <div style={{ fontSize: 11, color: "var(--rose)" }}>{fmtMoney(remaining)} ج.م</div>
+                </div>
+              </div>
+            )}
           </div>
           <div className="drawer-section">
             <div className="drawer-section-title">التفاصيل</div>
@@ -832,13 +871,8 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onTogglePay, onClose }) {
             )}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <button className={`btn ${c.paymentStatus === "Paid" ? "btn-danger" : "btn-mint"}`} style={{ justifyContent: "center" }} onClick={() => onTogglePay(c)}>
-              {c.paymentStatus === "Paid" ? "⬅️ وضع غير مدفوع" : (c.paymentStatus === "Free" ? "✅ تحديد كمدفوع" : "✅ تحديد كمدفوع")}
-            </button>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button className="btn btn-ghost" style={{ flex: 1, justifyContent: "center" }} onClick={() => onEdit(c)}>✏️ تعديل</button>
-              <button className="btn btn-danger" style={{ flex: 1, justifyContent: "center" }} onClick={() => onDelete(c)}>🗑 حذف</button>
-            </div>
+            <button className="btn btn-ghost" style={{ justifyContent: "center" }} onClick={() => onEdit(c)}>✏️ تعديل الحالة</button>
+            <button className="btn btn-danger" style={{ justifyContent: "center" }} onClick={() => onDelete(c)}>🗑 حذف الحالة</button>
           </div>
         </div>
       </div>
@@ -850,7 +884,9 @@ function SettingsScreen({ settings, onSave, onClose }) {
   const [s, setS] = useState(JSON.parse(JSON.stringify(settings)));
   const [loading, setLoading] = useState(false);
   const [newBranch, setNewBranch] = useState("");
+  const [newMaterial, setNewMaterial] = useState({ name: "", price: "" });
   const [matEdit, setMatEdit] = useState(null);
+  const [editingMaterial, setEditingMaterial] = useState(null);
 
   function addBranch() {
     const b = newBranch.trim();
@@ -863,12 +899,37 @@ function SettingsScreen({ settings, onSave, onClose }) {
     setS(prev => ({ ...prev, branches: prev.branches.filter(x => x !== b) }));
   }
 
-  function saveMatEdit() {
+  function addMaterial() {
+    const name = newMaterial.name.trim();
+    if (!name || s.materials.some(m => m.name === name)) return;
+    const newId = `mat_${Date.now()}`;
+    const price = newMaterial.price === "" ? null : parseFloat(newMaterial.price);
     setS(prev => ({
       ...prev,
-      materials: prev.materials.map(m => m.id === matEdit.id ? { ...m, price: matEdit.price === "" ? null : parseFloat(matEdit.price) } : m),
+      materials: [...prev.materials, { id: newId, name, price }]
     }));
-    setMatEdit(null);
+    setNewMaterial({ name: "", price: "" });
+  }
+
+  function updateMaterialPrice(id, price) {
+    setS(prev => ({
+      ...prev,
+      materials: prev.materials.map(m =>
+        m.id === id ? { ...m, price: price === "" ? null : parseFloat(price) } : m
+      )
+    }));
+    setEditingMaterial(null);
+  }
+
+  function deleteMaterial(id) {
+    if (s.materials.length <= 1) {
+      alert("لا يمكن حذف المادة الوحيدة");
+      return;
+    }
+    setS(prev => ({
+      ...prev,
+      materials: prev.materials.filter(m => m.id !== id)
+    }));
   }
 
   async function save() {
@@ -880,7 +941,7 @@ function SettingsScreen({ settings, onSave, onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 620 }} onClick={e => e.stopPropagation()}>
+      <div className="modal" style={{ maxWidth: 680 }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <span className="modal-title">⚙️ الإعدادات</span>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
@@ -896,33 +957,49 @@ function SettingsScreen({ settings, onSave, onClose }) {
             ))}
             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
               <input className="form-input" value={newBranch} onChange={e => setNewBranch(e.target.value)} placeholder="اسم الفرع الجديد" onKeyDown={e => e.key === "Enter" && addBranch()} />
-              <button className="btn btn-primary" onClick={addBranch}>إضافة</button>
+              <button className="btn btn-primary" onClick={addBranch}>إضافة فرع</button>
             </div>
           </div>
           <div className="divider" />
           <div className="settings-section">
-            <div className="settings-section-title">💊 أسعار المواد</div>
-            <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8 }}>⚠️ تغيير الأسعار هنا لن يؤثر على الحالات القديمة</div>
+            <div className="settings-section-title">💊 المواد والأسعار</div>
+            <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8 }}>
+              ⚠️ تغيير الأسعار هنا لن يؤثر على الحالات القديمة
+            </div>
             {s.materials.map(m => (
               <div key={m.id} className="settings-list-item">
                 <div>
-                  <div className="settings-list-item-name" style={{ color: MAT_COLORS[m.name] || "inherit" }}>{m.name}</div>
-                  <div className="settings-list-item-sub">{m.price !== null && m.price !== undefined ? `${m.price} ج.م / وحدة` : "سعر حر"}</div>
+                  <div className="settings-list-item-name" style={{ color: MAT_COLORS[m.name] || "var(--accent)" }}>{m.name}</div>
+                  <div className="settings-list-item-sub">
+                    {editingMaterial === m.id ? (
+                      <input 
+                        className="form-input" 
+                        type="number" 
+                        defaultValue={m.price ?? ""} 
+                        style={{ width: 100, padding: "4px 8px", fontSize: 12 }}
+                        onBlur={(e) => updateMaterialPrice(m.id, e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && updateMaterialPrice(m.id, e.target.value)}
+                        autoFocus
+                      />
+                    ) : (
+                      m.price !== null && m.price !== undefined ? `${m.price} ج.م / وحدة` : "سعر حر (يحدد عند الإضافة)"
+                    )}
+                  </div>
                 </div>
-                {m.price !== null && <button className="btn btn-ghost btn-sm" onClick={() => setMatEdit({ ...m })}>تعديل</button>}
+                <div style={{ display: "flex", gap: 6 }}>
+                  {m.price !== null && (
+                    <button className="btn btn-ghost btn-sm" onClick={() => setEditingMaterial(m.id)}>تعديل السعر</button>
+                  )}
+                  <button className="btn btn-danger btn-sm" onClick={() => deleteMaterial(m.id)}>حذف</button>
+                </div>
               </div>
             ))}
-          </div>
-          {matEdit && (
-            <div style={{ background: "var(--surface2)", border: "1px solid var(--border2)", borderRadius: 10, padding: 14, marginBottom: 12 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>تعديل سعر: {matEdit.name}</div>
-              <div style={{ display: "flex", gap: 8 }}>
-                <input className="form-input" type="number" value={matEdit.price ?? ""} onChange={e => setMatEdit(m => ({ ...m, price: e.target.value }))} />
-                <button className="btn btn-primary" onClick={saveMatEdit}>حفظ</button>
-                <button className="btn btn-ghost" onClick={() => setMatEdit(null)}>إلغاء</button>
-              </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <input className="form-input" value={newMaterial.name} onChange={e => setNewMaterial({ ...newMaterial, name: e.target.value })} placeholder="اسم المادة الجديدة" style={{ flex: 2 }} />
+              <input className="form-input" type="number" value={newMaterial.price} onChange={e => setNewMaterial({ ...newMaterial, price: e.target.value })} placeholder="السعر (اتركه فارغاً لسعر حر)" style={{ flex: 1 }} />
+              <button className="btn btn-primary" onClick={addMaterial}>➕ إضافة مادة</button>
             </div>
-          )}
+          </div>
         </div>
         <div className="modal-footer">
           <button className="btn btn-ghost" onClick={onClose}>إلغاء</button>
@@ -979,13 +1056,38 @@ export default function App() {
   }, []);
 
   const curMonth = currentMonthKey();
-  const branchFiltered = useMemo(() => activeBranch === "all" ? cases : cases.filter(c => c.branchName === activeBranch), [cases, activeBranch]);
+  
+  const branchFiltered = useMemo(() => 
+    activeBranch === "all" ? cases : cases.filter(c => c.branchName === activeBranch),
+    [cases, activeBranch]
+  );
+
+  const patientSearchFiltered = useMemo(() => {
+    if (!search.trim()) return branchFiltered;
+    const q = search.toLowerCase().trim();
+    return branchFiltered.filter(c => c.patientName.toLowerCase().includes(q));
+  }, [branchFiltered, search]);
+
+  const allMonths = useMemo(() => {
+    const months = [];
+    for (let year = DATE_RANGE.startYear; year <= DATE_RANGE.endYear; year++) {
+      for (let month = 1; month <= 12; month++) {
+        const monthStr = month.toString().padStart(2, '0');
+        months.push(`${year}-${monthStr}`);
+      }
+    }
+    return months.sort().reverse();
+  }, []);
 
   const tabFiltered = useMemo(() => {
-    let arr = branchFiltered;
+    let arr = patientSearchFiltered;
     const targetMonth = histMonth || curMonth;
+    
     if (activeTab === "current") {
-      arr = arr.filter(c => monthKey(c.actionDate || c.startDate || c.createdAt) === targetMonth);
+      arr = arr.filter(c => {
+        const d = c.actionDate || c.startDate || c.createdAt;
+        return monthKey(d) === targetMonth;
+      });
     } else if (activeTab === "active") {
       arr = arr.filter(c => c.caseStatus === "In progress" || c.caseStatus === "Correction");
     } else if (activeTab === "missed") {
@@ -993,29 +1095,32 @@ export default function App() {
     } else if (activeTab === "completed") {
       arr = arr.filter(c => c.caseStatus === "Completed");
     }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      arr = arr.filter(c => c.patientName.toLowerCase().includes(q));
-    }
+    
     return arr;
-  }, [branchFiltered, activeTab, curMonth, histMonth, search]);
+  }, [patientSearchFiltered, activeTab, curMonth, histMonth]);
 
   const stats = useMemo(() => {
-    const src = activeTab === "current" ? tabFiltered : branchFiltered.filter(c => monthKey(c.actionDate || c.startDate || c.createdAt) === (histMonth || curMonth));
+    const src = activeTab === "current" ? tabFiltered : patientSearchFiltered.filter(c => {
+      const d = c.actionDate || c.startDate || c.createdAt;
+      return monthKey(d) === (histMonth || curMonth);
+    });
     const total = src.reduce((s, c) => s + (c.totalAmount || 0), 0);
     const paid = src.filter(c => c.paymentStatus === "Paid").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const partial = src.filter(c => c.paymentStatus === "Partial").reduce((s, c) => s + (c.paidAmount || 0), 0);
     const free = src.filter(c => c.paymentStatus === "Free").reduce((s, c) => s + (c.totalAmount || 0), 0);
-    return { total, paid, free, unpaid: total - paid - free, count: src.length };
-  }, [tabFiltered, branchFiltered, activeTab, histMonth, curMonth]);
-
-  const availableMonths = useMemo(() => {
-    const s = new Set();
-    cases.forEach(c => {
-      const d = c.actionDate || c.startDate || c.createdAt;
-      if (d) s.add(monthKey(d));
-    });
-    return Array.from(s).sort().reverse();
-  }, [cases]);
+    const unpaidTotal = src.filter(c => c.paymentStatus === "Unpaid").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const partialRemaining = src.filter(c => c.paymentStatus === "Partial").reduce((s, c) => s + ((c.totalAmount || 0) - (c.paidAmount || 0)), 0);
+    
+    return { 
+      total, 
+      paid, 
+      partial, 
+      free, 
+      unpaid: unpaidTotal + partialRemaining,
+      collected: paid + partial,
+      count: src.length 
+    };
+  }, [tabFiltered, patientSearchFiltered, activeTab, histMonth, curMonth]);
 
   async function handleAddCase(form) {
     const row = await insertCase(session.user.id, form);
@@ -1036,11 +1141,16 @@ export default function App() {
       units: form.units,
       case_status: form.caseStatus,
       payment_status: form.paymentStatus,
+      paid_amount: form.paidAmount || 0,
       start_date: form.startDate,
       action_date: form.actionDate || null,
       notes: form.notes || null,
     });
-    setCases(prev => prev.map(x => x.id === c.id ? { ...x, ...form, totalAmount: form.pricePerUnit * form.units } : x));
+    setCases(prev => prev.map(x => x.id === c.id ? { 
+      ...x, 
+      ...form, 
+      totalAmount: form.pricePerUnit * form.units 
+    } : x));
     showToast("✅ تم حفظ التعديل");
     setEditCase(null);
     setDetailCase(null);
@@ -1052,17 +1162,6 @@ export default function App() {
     setCases(prev => prev.filter(x => x.id !== c.id));
     setDetailCase(null);
     showToast("🗑 تم الحذف");
-  }
-
-  async function handleTogglePay(c) {
-    let nv;
-    if (c.paymentStatus === "Paid") nv = "Unpaid";
-    else if (c.paymentStatus === "Free") nv = "Paid";
-    else nv = "Paid";
-    await updateCaseDB(c.id, { payment_status: nv });
-    setCases(prev => prev.map(x => x.id === c.id ? { ...x, paymentStatus: nv } : x));
-    setDetailCase(prev => prev ? { ...prev, paymentStatus: nv } : null);
-    showToast(nv === "Paid" ? "✅ تم تحديد كمدفوع" : (nv === "Free" ? "✅ تم تحديد كمجاناً" : "↩️ تم تحديد كغير مدفوع"));
   }
 
   async function handleSaveSettings(s) {
@@ -1085,17 +1184,16 @@ export default function App() {
     e.target.value = "";
   }
 
-  // دالة التصدير مع فلتر الشهر
   const exportWithFilter = useCallback(() => {
     let dataToExport = tabFiltered;
     if (activeTab === "current" && histMonth) {
-      dataToExport = branchFiltered.filter(c => {
+      dataToExport = patientSearchFiltered.filter(c => {
         const d = c.actionDate || c.startDate || c.createdAt;
         return monthKey(d) === histMonth;
       });
     }
     exportCSV(dataToExport);
-  }, [tabFiltered, branchFiltered, activeTab, histMonth]);
+  }, [tabFiltered, patientSearchFiltered, activeTab, histMonth]);
 
   if (!authInit) return <div className="loading" style={{ minHeight: "100vh" }}><div className="spinner" /></div>;
   if (!session) return <LoginScreen onLogin={s => setSession(s)} />;
@@ -1127,19 +1225,15 @@ export default function App() {
             <option value="all">🏥 كل الفروع</option>
             {settings.branches.map(b => <option key={b} value={b}>{b}</option>)}
           </select>
-          {activeTab === "current" && (
-            <>
-              <span className="branch-label" style={{ marginRight: 8 }}>الشهر:</span>
-              <select className="month-select" value={histMonth} onChange={e => setHistMonth(e.target.value)}>
-                <option value="">كل الشهور</option>
-                {availableMonths.map(m => {
-                  const [y, mo] = m.split("-");
-                  const names = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-                  return <option key={m} value={m}>{names[parseInt(mo) - 1]} {y}</option>;
-                })}
-              </select>
-            </>
-          )}
+          <span className="branch-label" style={{ marginRight: 8 }}>الشهر:</span>
+          <select className="month-select" value={histMonth} onChange={e => setHistMonth(e.target.value)}>
+            <option value="">كل الشهور</option>
+            {allMonths.map(m => {
+              const [y, mo] = m.split("-");
+              const names = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+              return <option key={m} value={m}>{names[parseInt(mo) - 1]} {y}</option>;
+            })}
+          </select>
         </div>
         <div className="tabs">
           {tabs.map(t => (
@@ -1153,8 +1247,8 @@ export default function App() {
         <div className="stats-grid">
           {[
             { label: "إجمالي الشهر", value: `${fmtMoney(stats.total)} ج.م`, color: "var(--gold)", icon: "💰" },
-            { label: "محصّل", value: `${fmtMoney(stats.paid)} ج.م`, color: "var(--mint)", icon: "✅" },
-            { label: "غير محصّل", value: `${fmtMoney(stats.unpaid)} ج.م`, color: "var(--rose)", icon: "⏳" },
+            { label: "المحصل", value: `${fmtMoney(stats.collected)} ج.م`, color: "var(--mint)", icon: "✅" },
+            { label: "المتبقي", value: `${fmtMoney(stats.unpaid)} ج.م`, color: "var(--rose)", icon: "⏳" },
             { label: "مجاناً", value: `${fmtMoney(stats.free)} ج.م`, color: "var(--amber)", icon: "🎁" },
             { label: "عدد الحالات", value: tabFiltered.length, color: "var(--lavender)", icon: "📋" },
           ].map(({ label, value, color, icon }, i) => (
@@ -1166,19 +1260,29 @@ export default function App() {
         </div>
         <div className="toolbar">
           <div className="search-wrap">
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 بحث باسم المريض..." />
+            <input 
+              value={search} 
+              onChange={e => setSearch(e.target.value)} 
+              placeholder="🔍 بحث باسم المريض (يجلب كل حالاته)..." 
+            />
           </div>
         </div>
         {loading ? <Spinner /> : tabFiltered.length === 0 ? (
-          <div className="empty"><div className="empty-icon">📋</div><div className="empty-msg">لا توجد حالات في هذا الفلتر</div></div>
+          <div className="empty">
+            <div className="empty-icon">📋</div>
+            <div className="empty-msg">
+              {search ? `لا توجد حالات للمريض "${search}"` : "لا توجد حالات في هذا الفلتر"}
+            </div>
+          </div>
         ) : (
           <div className="cases-grid">
             {tabFiltered.map((c, i) => {
               const sm = STATUS_META[c.caseStatus] || {};
               const mc = MAT_COLORS[c.materialName] || "var(--mint)";
-              const getPaymentLabel = (status) => {
-                if (status === "Paid") return "مدفوع";
+              const getPaymentLabel = (status, paidAmount) => {
+                if (status === "Paid") return "مدفوع كامل";
                 if (status === "Free") return "مجاناً";
+                if (status === "Partial") return `مدفوع جزئي (${fmtMoney(paidAmount)})`;
                 return "غير مدفوع";
               };
               return (
@@ -1191,14 +1295,19 @@ export default function App() {
                     <Badge label={c.caseStatus} color={sm.color} bg={sm.bg} icon={sm.icon} />
                     <Badge label={c.materialName} color={mc} bg={mc + "20"} />
                     <Badge 
-                      label={getPaymentLabel(c.paymentStatus)} 
-                      color={c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : "var(--rose)")} 
-                      bg={c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : "rgba(239,68,68,.12)")} 
+                      label={getPaymentLabel(c.paymentStatus, c.paidAmount)} 
+                      color={c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)"))} 
+                      bg={c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : (c.paymentStatus === "Partial" ? "rgba(155,142,255,.12)" : "rgba(239,68,68,.12)"))} 
                     />
                   </div>
                   <div className="case-footer">
-                    <div><div className="case-amount" style={{ color: "var(--gold)" }}>{fmtMoney(c.totalAmount)} ج.م</div><div className="case-units">{c.units} وحدة × {c.pricePerUnit}</div></div>
-                    {c.actionDate && <div style={{ fontSize: 11, color: "var(--text3)" }}>إجراء: {fmtDate(c.actionDate)}</div>}
+                    <div>
+                      <div className="case-amount" style={{ color: "var(--gold)" }}>{fmtMoney(c.totalAmount)} ج.م</div>
+                      <div className="case-units">{c.units} وحدة × {c.pricePerUnit}</div>
+                    </div>
+                    {c.paymentStatus === "Partial" && (
+                      <div style={{ fontSize: 10, color: "var(--mint)" }}>محصل: {fmtMoney(c.paidAmount)}</div>
+                    )}
                   </div>
                 </div>
               );
@@ -1209,7 +1318,7 @@ export default function App() {
       <button className="btn-fab" onClick={() => setShowAdd(true)}>＋</button>
       {showAdd && <CaseModal settings={settings} defaultBranch={activeBranch !== "all" ? activeBranch : settings.branches[0]} onSave={handleAddCase} onClose={() => setShowAdd(false)} />}
       {editCase && <CaseModal existing={editCase} settings={settings} defaultBranch={editCase.branchName} onSave={handleEditCase} onClose={() => setEditCase(null)} />}
-      {detailCase && <CaseDrawer c={detailCase} settings={settings} onEdit={c => { setEditCase(c); setDetailCase(null); }} onDelete={handleDelete} onTogglePay={handleTogglePay} onClose={() => setDetailCase(null)} />}
+      {detailCase && <CaseDrawer c={detailCase} settings={settings} onEdit={c => { setEditCase(c); setDetailCase(null); }} onDelete={handleDelete} onTogglePay={null} onClose={() => setDetailCase(null)} />}
       {showSettings && <SettingsScreen settings={settings} onSave={handleSaveSettings} onClose={() => setShowSettings(false)} />}
       <Toast msg={toast} />
     </>
