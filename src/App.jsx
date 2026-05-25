@@ -81,13 +81,20 @@ const CSS = `
   --r2: 8px;
 }
 
-html { direction: rtl; }
+html { 
+  direction: rtl;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
 
 body {
   font-family: 'Tajawal', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -106,6 +113,8 @@ body {
   display: flex; align-items: center; justify-content: center;
   background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(61,126,255,.18) 0%, transparent 70%), var(--bg);
   padding: 24px;
+  width: 100%;
+  overflow-x: hidden;
 }
 .login-card {
   background: var(--surface);
@@ -132,27 +141,39 @@ body {
   border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 100;
   padding: 0 24px;
+  width: 100%;
+  overflow-x: hidden;
 }
 .header-top {
   height: 58px;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%;
+  overflow-x: auto;
 }
 .header-title {
   font-size: 17px; font-weight: 800; color: var(--text);
   display: flex; align-items: center; gap: 8px;
+  white-space: nowrap;
 }
 .header-title .dot {
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 8px var(--accent);
+  flex-shrink: 0;
 }
-.header-actions { display: flex; gap: 8px; align-items: center; }
+.header-actions { 
+  display: flex; gap: 8px; align-items: center;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
 
 .branch-bar {
   padding: 0 24px 12px;
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  width: 100%;
+  overflow-x: auto;
 }
-.branch-label { font-size: 11px; color: var(--text3); font-weight: 700; }
+.branch-label { font-size: 11px; color: var(--text3); font-weight: 700; white-space: nowrap; }
 .branch-select {
   background: var(--surface2);
   border: 1px solid var(--border2);
@@ -162,6 +183,7 @@ body {
   font-size: 14px; font-weight: 700;
   padding: 6px 12px;
   outline: none; cursor: pointer;
+  flex-shrink: 0;
 }
 .branch-select:focus { border-color: var(--accent); }
 
@@ -172,6 +194,8 @@ body {
   gap: 12px;
   align-items: center;
   flex-wrap: wrap;
+  width: 100%;
+  overflow-x: auto;
 }
 .year-select {
   background: var(--surface2);
@@ -184,6 +208,7 @@ body {
   padding: 8px 12px;
   outline: none;
   cursor: pointer;
+  flex-shrink: 0;
 }
 .month-select {
   background: var(--surface2);
@@ -196,6 +221,7 @@ body {
   padding: 8px 12px;
   outline: none;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .tabs {
@@ -203,6 +229,7 @@ body {
   padding: 8px 24px;
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
+  width: 100%;
 }
 .tab {
   padding: 7px 16px;
@@ -213,23 +240,34 @@ body {
   cursor: pointer; white-space: nowrap;
   background: transparent;
   font-family: 'Tajawal', sans-serif;
+  flex-shrink: 0;
 }
 .tab:hover { border-color: var(--accent); color: var(--accent); }
 .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-.main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+.main { 
+  padding: 20px 24px; 
+  max-width: 1400px; 
+  margin: 0 auto;
+  width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px; margin-bottom: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; 
+  margin-bottom: 20px;
+  width: 100%;
 }
 .stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r);
   padding: 16px;
-  position: relative; overflow: hidden;
+  position: relative; 
+  overflow: hidden;
   animation: fadeUp .3s ease both;
 }
 .stat-card::before {
@@ -239,25 +277,39 @@ body {
   opacity: .06; pointer-events: none;
 }
 .stat-label { font-size: 11px; color: var(--text2); font-weight: 700; margin-bottom: 8px; }
-.stat-value { font-size: 22px; font-weight: 900; line-height: 1; }
+.stat-value { font-size: 22px; font-weight: 900; line-height: 1; word-break: break-word; }
 
 .toolbar {
   display: flex; gap: 10px; align-items: center;
-  margin-bottom: 16px; flex-wrap: wrap;
+  margin-bottom: 16px; 
+  flex-wrap: wrap;
+  width: 100%;
 }
-.search-wrap { position: relative; flex: 1; min-width: 200px; }
+.search-wrap { 
+  position: relative; 
+  flex: 1; 
+  min-width: 200px;
+  width: 100%;
+}
 .search-wrap input {
-  width: 100%; padding: 9px 36px 9px 14px;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--r2); color: var(--text);
-  font-family: 'Tajawal', sans-serif; font-size: 14px; outline: none;
+  width: 100%; 
+  padding: 9px 36px 9px 14px;
+  background: var(--surface2); 
+  border: 1px solid var(--border);
+  border-radius: var(--r2); 
+  color: var(--text);
+  font-family: 'Tajawal', sans-serif; 
+  font-size: 14px; 
+  outline: none;
+  box-sizing: border-box;
 }
 .search-wrap input:focus { border-color: var(--accent); }
 
 .cases-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 12px;
+  width: 100%;
 }
 .case-card {
   background: var(--surface);
@@ -267,6 +319,7 @@ body {
   position: relative;
   overflow: visible;
   transition: all .18s;
+  animation: fadeUp .3s ease both;
 }
 .case-card:hover { border-color: var(--border2); transform: translateY(-2px); }
 .case-card::after {
@@ -279,14 +332,57 @@ body {
 .case-clickable-area {
   cursor: pointer;
 }
-.case-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-.case-name { font-size: 15px; font-weight: 700; color: var(--text); }
-.case-date { font-size: 11px; color: var(--text3); margin-top: 2px; }
-.case-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; position: relative; }
-.case-footer { display: flex; justify-content: space-between; align-items: center; }
-.case-amount { font-size: 18px; font-weight: 800; }
-.case-units { font-size: 11px; color: var(--text3); }
-.case-branch { font-size: 11px; color: var(--text2); background: var(--surface2); padding: 3px 8px; border-radius: 20px; }
+.case-card-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: flex-start; 
+  margin-bottom: 10px;
+  gap: 8px;
+}
+.case-name { 
+  font-size: 15px; 
+  font-weight: 700; 
+  color: var(--text);
+  word-break: break-word;
+}
+.case-date { 
+  font-size: 11px; 
+  color: var(--text3); 
+  margin-top: 2px;
+  white-space: nowrap;
+}
+.case-badges { 
+  display: flex; 
+  gap: 6px; 
+  flex-wrap: wrap; 
+  margin-bottom: 10px; 
+  position: relative;
+}
+.case-footer { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.case-amount { 
+  font-size: 18px; 
+  font-weight: 800;
+  word-break: break-word;
+}
+.case-units { 
+  font-size: 11px; 
+  color: var(--text3);
+  white-space: nowrap;
+}
+.case-branch { 
+  font-size: 11px; 
+  color: var(--text2); 
+  background: var(--surface2); 
+  padding: 3px 8px; 
+  border-radius: 20px;
+  white-space: nowrap;
+}
 
 .badge-clickable {
   display: inline-flex;
@@ -294,18 +390,19 @@ body {
   gap: 4px;
   padding: 6px 10px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
   transition: all .15s;
   border: 1px solid transparent;
   position: relative;
+  user-select: none;
+  flex-shrink: 0;
 }
 .badge-clickable:hover {
   transform: scale(1.02);
   filter: brightness(1.1);
-  border-color: var(--accent);
 }
 
 .badge {
@@ -317,10 +414,16 @@ body {
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dropdown-container {
+  position: relative;
+  display: inline-block;
 }
 
 .dropdown-menu {
-  position: fixed;
+  position: absolute;
   background: var(--surface2);
   border: 1px solid var(--border2);
   border-radius: var(--r2);
@@ -329,7 +432,16 @@ body {
   max-width: 200px;
   box-shadow: 0 8px 24px rgba(0,0,0,.4);
   overflow: hidden;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
 }
+.dropdown-menu.top {
+  top: auto;
+  bottom: 100%;
+  margin-bottom: 4px;
+}
+
 .dropdown-item {
   padding: 10px 14px;
   font-size: 13px;
@@ -337,6 +449,7 @@ body {
   transition: background .1s;
   text-align: center;
   border-bottom: 1px solid var(--border);
+  word-break: break-word;
 }
 .dropdown-item:last-child {
   border-bottom: none;
@@ -347,10 +460,19 @@ body {
 }
 
 .btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 16px; border-radius: var(--r2);
-  font-family: 'Tajawal', sans-serif; font-size: 13px; font-weight: 700;
-  border: none; cursor: pointer; transition: all .18s; white-space: nowrap;
+  display: inline-flex; 
+  align-items: center; 
+  gap: 6px;
+  padding: 8px 16px; 
+  border-radius: var(--r2);
+  font-family: 'Tajawal', sans-serif; 
+  font-size: 13px; 
+  font-weight: 700;
+  border: none; 
+  cursor: pointer; 
+  transition: all .18s; 
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .btn-primary { background: var(--accent); color: #fff; }
 .btn-primary:hover { background: #3070e8; box-shadow: 0 4px 16px rgba(61,126,255,.4); }
@@ -361,7 +483,7 @@ body {
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 .btn-icon { padding: 7px; border-radius: var(--r2); }
 .btn-fab {
-  position: fixed; bottom: 28px; left: 28px;
+  position: fixed; bottom: 28px; right: 28px;
   width: 56px; height: 56px; border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   color: #fff; font-size: 24px;
@@ -377,6 +499,9 @@ body {
   z-index: 200;
   display: flex; align-items: center; justify-content: center;
   padding: 20px; animation: fadeIn .2s ease;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 .modal {
   background: var(--surface);
@@ -387,6 +512,7 @@ body {
   overflow-y: auto;
   box-shadow: 0 40px 80px rgba(0,0,0,.7);
   animation: fadeUp .25s ease;
+  box-sizing: border-box;
 }
 .modal-header {
   padding: 20px 24px 0;
@@ -398,16 +524,21 @@ body {
 }
 .modal-title { font-size: 16px; font-weight: 800; }
 .modal-body { padding: 20px 24px; }
-.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
 
 .form-group { margin-bottom: 14px; }
 .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
 .form-input {
   width: 100%;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--r2); padding: 10px 13px;
-  color: var(--text); font-family: 'Tajawal', sans-serif; font-size: 14px;
+  background: var(--surface2); 
+  border: 1px solid var(--border);
+  border-radius: var(--r2); 
+  padding: 10px 13px;
+  color: var(--text); 
+  font-family: 'Tajawal', sans-serif; 
+  font-size: 14px;
   outline: none;
+  box-sizing: border-box;
 }
 .form-input:focus { border-color: var(--accent); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -421,7 +552,13 @@ body {
   margin-bottom: 14px;
 }
 .total-preview-label { font-size: 12px; color: var(--text2); }
-.total-preview-value { font-size: 26px; font-weight: 900; color: var(--gold); font-family: 'JetBrains Mono', monospace; }
+.total-preview-value { 
+  font-size: 26px; 
+  font-weight: 900; 
+  color: var(--gold); 
+  font-family: 'JetBrains Mono', monospace;
+  word-break: break-word;
+}
 
 .drawer-overlay {
   position: fixed; inset: 0;
@@ -457,6 +594,7 @@ body {
   top: 0;
   background: var(--surface);
   z-index: 1;
+  gap: 12px;
 }
 .drawer-body { padding: 20px; }
 .drawer-section { margin-bottom: 24px; }
@@ -466,9 +604,22 @@ body {
   margin-bottom: 10px; padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
 }
-.detail-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.detail-row { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 8px 0; 
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
 .detail-key { font-size: 12px; color: var(--text2); }
-.detail-val { font-size: 13px; font-weight: 600; color: var(--text); text-align: left; }
+.detail-val { 
+  font-size: 13px; 
+  font-weight: 600; 
+  color: var(--text); 
+  text-align: left;
+  word-break: break-word;
+}
 
 .settings-section { margin-bottom: 28px; }
 .settings-section-title {
@@ -478,37 +629,163 @@ body {
 .settings-list-item {
   display: flex; justify-content: space-between; align-items: center;
   padding: 10px 14px;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--r2); margin-bottom: 6px;
+  background: var(--surface2); 
+  border: 1px solid var(--border);
+  border-radius: var(--r2); 
+  margin-bottom: 6px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
-.settings-list-item-name { font-size: 13px; font-weight: 600; }
-.settings-list-item-sub { font-size: 11px; color: var(--text2); }
+.settings-list-item-name { 
+  font-size: 13px; 
+  font-weight: 600;
+  word-break: break-word;
+}
+.settings-list-item-sub { 
+  font-size: 11px; 
+  color: var(--text2);
+}
 
 .toast {
-  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-  background: var(--surface2); border: 1px solid var(--border2);
-  padding: 10px 20px; border-radius: 20px;
-  font-size: 13px; font-weight: 600; color: var(--text);
-  z-index: 300; animation: fadeUp .25s ease;
-  white-space: nowrap;
+  position: fixed; 
+  bottom: 90px; 
+  left: 50%; 
+  transform: translateX(-50%);
+  background: var(--surface2); 
+  border: 1px solid var(--border2);
+  padding: 10px 20px; 
+  border-radius: 20px;
+  font-size: 13px; 
+  font-weight: 600; 
+  color: var(--text);
+  z-index: 300; 
+  animation: fadeUp .25s ease;
+  white-space: normal;
+  max-width: 90%;
 }
 
-.empty { text-align: center; padding: 60px 20px; color: var(--text3); }
-.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: .3; }
+.empty { 
+  text-align: center; 
+  padding: 60px 20px; 
+  color: var(--text3);
+  width: 100%;
+}
+.empty-icon { 
+  font-size: 48px; 
+  margin-bottom: 12px; 
+  opacity: .3; 
+}
+.empty-msg { 
+  font-size: 14px;
+  word-break: break-word;
+}
 
-.loading { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 40px; color: var(--text2); }
-.spinner { width: 18px; height: 18px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+.loading { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 8px; 
+  padding: 40px 20px; 
+  color: var(--text2);
+  width: 100%;
+  min-height: 100vh;
+}
+.spinner { 
+  width: 18px; 
+  height: 18px; 
+  border: 2px solid var(--border2); 
+  border-top-color: var(--accent); 
+  border-radius: 50%; 
+  animation: spin .7s linear infinite; 
+}
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .divider { height: 1px; background: var(--border); margin: 12px 0; }
 
 @media (max-width: 640px) {
-  .main { padding: 14px; }
-  .stats-grid { grid-template-columns: 1fr 1fr; }
-  .cases-grid { grid-template-columns: 1fr; }
-  .form-row { grid-template-columns: 1fr; }
-  .month-selector-wrapper { flex-direction: column; align-items: flex-start; }
-  .badge-clickable { padding: 4px 8px; font-size: 11px; }
+  .main { 
+    padding: 14px; 
+    width: 100%;
+  }
+  .stats-grid { 
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px;
+  }
+  .cases-grid { 
+    grid-template-columns: 1fr;
+  }
+  .form-row { 
+    grid-template-columns: 1fr; 
+  }
+  .month-selector-wrapper { 
+    flex-direction: column; 
+    align-items: flex-start; 
+  }
+  .badge-clickable { 
+    padding: 4px 8px; 
+    font-size: 10px; 
+  }
+  .badge {
+    padding: 2px 6px;
+    font-size: 10px;
+  }
+  .header { 
+    padding: 0 14px; 
+  }
+  .branch-bar, .tabs { 
+    padding-right: 14px; 
+    padding-left: 14px; 
+  }
+  .header-top {
+    gap: 6px;
+  }
+  .header-actions .btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .case-card {
+    padding: 12px;
+  }
+  .case-name {
+    font-size: 14px;
+  }
+  .case-amount {
+    font-size: 16px;
+  }
+  .stat-value {
+    font-size: 18px;
+  }
+  .modal-footer {
+    justify-content: stretch;
+  }
+  .modal-footer .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .cases-grid {
+    grid-template-columns: 1fr;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .header-title {
+    font-size: 15px;
+  }
+  .modal {
+    border-radius: 12px;
+    max-width: 95vw;
+  }
+  .btn-fab {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+    bottom: 20px;
+    right: 20px;
+  }
 }
 `;
 
@@ -932,6 +1209,129 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
   );
 }
 
+function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, onPaymentChange }) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener("touchstart", handleClickOutside);
+      };
+    }
+  }, [dropdownOpen]);
+
+  if (type === 'status') {
+    const sm = STATUS_META[c.caseStatus] || {};
+    return (
+      <div className="dropdown-container" ref={dropdownRef}>
+        <span 
+          className="badge-clickable" 
+          style={{ color: sm.color, background: sm.bg, border: `1px solid ${sm.color}30` }}
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+        >
+          {sm.icon} {c.caseStatus} {dropdownOpen ? '▲' : '▼'}
+        </span>
+        {dropdownOpen && (
+          <div className="dropdown-menu">
+            {settings.caseStatuses.map(s => (
+              <div 
+                key={s.id} 
+                className="dropdown-item" 
+                onClick={() => {
+                  onStatusChange(c, s.name);
+                  setDropdownOpen(false);
+                }}
+              >
+                {STATUS_META[s.name]?.icon} {s.name}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (type === 'material') {
+    const mc = MAT_COLORS[c.materialName] || "var(--mint)";
+    return (
+      <div className="dropdown-container" ref={dropdownRef}>
+        <span 
+          className="badge-clickable" 
+          style={{ color: mc, background: mc + "20", border: `1px solid ${mc}30` }}
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+        >
+          {c.materialName} {dropdownOpen ? '▲' : '▼'}
+        </span>
+        {dropdownOpen && (
+          <div className="dropdown-menu">
+            {settings.materials.map(m => (
+              <div 
+                key={m.id} 
+                className="dropdown-item" 
+                onClick={() => {
+                  onMaterialChange(c, m.name);
+                  setDropdownOpen(false);
+                }}
+              >
+                {m.name} {m.price ? `(${m.price})` : '(سعر حر)'}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (type === 'payment') {
+    const getPaymentLabel = (status, paidAmount) => {
+      if (status === "Paid") return "مدفوع كامل";
+      if (status === "Free") return "مجاناً";
+      if (status === "Partial") return `مدفوع جزئي (${fmtMoney(paidAmount)})`;
+      return "غير مدفوع";
+    };
+    const paymentColor = c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)"));
+    const paymentBg = c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : (c.paymentStatus === "Partial" ? "rgba(155,142,255,.12)" : "rgba(239,68,68,.12)"));
+    
+    return (
+      <div className="dropdown-container" ref={dropdownRef}>
+        <span 
+          className="badge-clickable" 
+          style={{ color: paymentColor, background: paymentBg, border: `1px solid ${paymentColor}30` }}
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+        >
+          {getPaymentLabel(c.paymentStatus, c.paidAmount)} {dropdownOpen ? '▲' : '▼'}
+        </span>
+        {dropdownOpen && (
+          <div className="dropdown-menu">
+            {settings.paymentStatuses.filter(s => s.name !== "Partial").map(s => (
+              <div 
+                key={s.id} 
+                className="dropdown-item" 
+                onClick={() => {
+                  onPaymentChange(c, s.name);
+                  setDropdownOpen(false);
+                }}
+              >
+                {s.name === "Paid" ? "✅ مدفوع كامل" : (s.name === "Free" ? "🎁 مجاناً" : "❌ غير مدفوع")}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+}
+
 function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose }) {
   const sm = STATUS_META[c.caseStatus] || {};
   const mc = MAT_COLORS[c.materialName] || "var(--mint)";
@@ -1170,7 +1570,6 @@ export default function App() {
   const [detailCase, setDetailCase] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [toast, setToast] = useState("");
-  const [dropdownState, setDropdownState] = useState({ caseId: null, type: null, x: 0, y: 0 });
   const importRef = useRef();
 
   useEffect(() => {
@@ -1206,7 +1605,6 @@ export default function App() {
     [cases, activeBranch]
   );
 
-  // البحث في جميع الحالات (بدون فلتر شهر)
   const patientSearchFiltered = useMemo(() => {
     if (!search.trim()) return branchFiltered;
     const q = search.toLowerCase().trim();
@@ -1226,7 +1624,6 @@ export default function App() {
     "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
   ];
 
-  // تطبيق فلتر الشهر بعد البحث
   const tabFiltered = useMemo(() => {
     let arr = patientSearchFiltered;
     
@@ -1332,12 +1729,10 @@ export default function App() {
     }
     const msg = newStatus === "Paid" ? "✅ تم التحديد كمدفوع كامل" : (newStatus === "Free" ? "🎁 تم التحديد كمجاناً" : "❌ تم التحديد كغير مدفوع");
     showToast(msg);
-    setDropdownState({ caseId: null, type: null, x: 0, y: 0 });
   }
 
   async function handleUpdateMaterial(c, newMaterialName) {
     if (c.materialName === newMaterialName) {
-      setDropdownState({ caseId: null, type: null, x: 0, y: 0 });
       return;
     }
     const newMaterial = settings.materials.find(m => m.name === newMaterialName);
@@ -1348,12 +1743,10 @@ export default function App() {
       setDetailCase(prev => ({ ...prev, materialName: newMaterialName, pricePerUnit: newPrice, totalAmount: newPrice * prev.units }));
     }
     showToast(`✅ تم تغيير المادة إلى ${newMaterialName}`);
-    setDropdownState({ caseId: null, type: null, x: 0, y: 0 });
   }
 
   async function handleUpdateCaseStatus(c, newStatus) {
     if (c.caseStatus === newStatus) {
-      setDropdownState({ caseId: null, type: null, x: 0, y: 0 });
       return;
     }
     await updateCaseDB(c.id, { case_status: newStatus });
@@ -1362,7 +1755,6 @@ export default function App() {
       setDetailCase(prev => ({ ...prev, caseStatus: newStatus }));
     }
     showToast(`✅ تم تغيير الحالة إلى ${newStatus}`);
-    setDropdownState({ caseId: null, type: null, x: 0, y: 0 });
   }
 
   async function handleSaveSettings(s) {
@@ -1401,38 +1793,9 @@ export default function App() {
   }, [patientSearchFiltered, showToast]);
 
   const handleCardClick = (c, e) => {
-    if (e.target.closest('.badge-clickable')) return;
+    if (e.target.closest('.badge-clickable') || e.target.closest('.dropdown-container')) return;
     setDetailCase(c);
   };
-
-  const handleBadgeClick = (e, caseId, type) => {
-    e.stopPropagation();
-    e.preventDefault();
-    
-    const rect = e.target.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : rect.left;
-    const clientY = e.touches ? e.touches[0].clientY : rect.bottom;
-    
-    setDropdownState({
-      caseId: caseId,
-      type: type,
-      x: clientX,
-      y: clientY + 10
-    });
-  };
-
-  const closeDropdown = useCallback(() => {
-    setDropdownState({ caseId: null, type: null, x: 0, y: 0 });
-  }, []);
-
-  useEffect(() => {
-    document.addEventListener('click', closeDropdown);
-    document.addEventListener('touchstart', closeDropdown);
-    return () => {
-      document.removeEventListener('click', closeDropdown);
-      document.removeEventListener('touchstart', closeDropdown);
-    };
-  }, [closeDropdown]);
 
   if (!authInit) return <div className="loading" style={{ minHeight: "100vh" }}><div className="spinner" /></div>;
   if (!session) return <LoginScreen onLogin={s => setSession(s)} />;
@@ -1453,8 +1816,8 @@ export default function App() {
           <div className="header-actions">
             <input type="file" ref={importRef} accept=".csv" style={{ display: "none" }} onChange={handleImport} />
             <button className="btn btn-ghost btn-sm" onClick={() => importRef.current?.click()}>📥 استيراد</button>
-            <button className="btn btn-ghost btn-sm" onClick={exportCurrentMonth}>📤 تصدير الشهر</button>
-            <button className="btn btn-primary btn-sm" onClick={exportAll}>📤 تصدير الكل</button>
+            <button className="btn btn-ghost btn-sm" onClick={exportCurrentMonth}>📤 الشهر</button>
+            <button className="btn btn-primary btn-sm" onClick={exportAll}>📤 الكل</button>
             <button className="btn btn-ghost btn-icon" onClick={() => setShowSettings(true)}>⚙️</button>
             <button className="btn btn-ghost btn-sm" onClick={() => supabase.auth.signOut()}>خروج</button>
           </div>
@@ -1527,12 +1890,6 @@ export default function App() {
             {tabFiltered.map((c, i) => {
               const sm = STATUS_META[c.caseStatus] || {};
               const mc = MAT_COLORS[c.materialName] || "var(--mint)";
-              const getPaymentLabel = (status, paidAmount) => {
-                if (status === "Paid") return "مدفوع كامل";
-                if (status === "Free") return "مجاناً";
-                if (status === "Partial") return `مدفوع جزئي (${fmtMoney(paidAmount)})`;
-                return "غير مدفوع";
-              };
               return (
                 <div key={c.id} className="case-card fade-up" style={{ "--status-color": sm.color, animationDelay: `${Math.min(i, 12) * 0.04}s` }}>
                   <div className="case-clickable-area" onClick={(e) => handleCardClick(c, e)}>
@@ -1541,67 +1898,30 @@ export default function App() {
                       <span className="case-branch">{c.branchName}</span>
                     </div>
                     <div className="case-badges">
-                      <span 
-                        className="badge-clickable" 
-                        style={{ color: sm.color, background: sm.bg, border: `1px solid ${sm.color}30` }}
-                        onClick={(e) => handleBadgeClick(e, c.id, 'status')}
-                      >
-                        {sm.icon} {c.caseStatus} ▼
-                      </span>
-                      <span 
-                        className="badge-clickable" 
-                        style={{ color: mc, background: mc + "20", border: `1px solid ${mc}30` }}
-                        onClick={(e) => handleBadgeClick(e, c.id, 'material')}
-                      >
-                        {c.materialName} ▼
-                      </span>
-                      <span 
-                        className="badge-clickable" 
-                        style={{ 
-                          color: c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)")),
-                          background: c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : (c.paymentStatus === "Partial" ? "rgba(155,142,255,.12)" : "rgba(239,68,68,.12)")),
-                          border: `1px solid ${c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)"))}30`
-                        }}
-                        onClick={(e) => handleBadgeClick(e, c.id, 'payment')}
-                      >
-                        {getPaymentLabel(c.paymentStatus, c.paidAmount)} ▼
-                      </span>
+                      <BadgeDropdown 
+                        c={c} 
+                        type="status" 
+                        settings={settings} 
+                        onStatusChange={handleUpdateCaseStatus}
+                      />
+                      <BadgeDropdown 
+                        c={c} 
+                        type="material" 
+                        settings={settings} 
+                        onMaterialChange={handleUpdateMaterial}
+                      />
+                      <BadgeDropdown 
+                        c={c} 
+                        type="payment" 
+                        settings={settings} 
+                        onPaymentChange={handleUpdatePayment}
+                      />
                     </div>
                     <div className="case-footer">
                       <div><div className="case-amount" style={{ color: "var(--gold)" }}>{fmtMoney(c.totalAmount)} ج.م</div><div className="case-units">{c.units} وحدة × {c.pricePerUnit}</div></div>
                       {c.paymentStatus === "Partial" && (<div style={{ fontSize: 10, color: "var(--mint)" }}>محصل: {fmtMoney(c.paidAmount)}</div>)}
                     </div>
                   </div>
-                  
-                  {dropdownState.caseId === c.id && dropdownState.type === 'status' && (
-                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 2000 }}>
-                      {settings.caseStatuses.map(s => (
-                        <div key={s.id} className="dropdown-item" onClick={() => handleUpdateCaseStatus(c, s.name)}>
-                          {STATUS_META[s.name]?.icon} {s.name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {dropdownState.caseId === c.id && dropdownState.type === 'material' && (
-                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 2000 }}>
-                      {settings.materials.map(m => (
-                        <div key={m.id} className="dropdown-item" onClick={() => handleUpdateMaterial(c, m.name)}>
-                          {m.name} {m.price ? `(${m.price})` : '(سعر حر)'}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {dropdownState.caseId === c.id && dropdownState.type === 'payment' && (
-                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 2000 }}>
-                      {settings.paymentStatuses.filter(s => s.name !== "Partial").map(s => (
-                        <div key={s.id} className="dropdown-item" onClick={() => handleUpdatePayment(c, s.name)}>
-                          {s.name === "Paid" ? "✅ مدفوع كامل" : (s.name === "Free" ? "🎁 مجاناً" : "❌ غير مدفوع")}
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               );
             })}
