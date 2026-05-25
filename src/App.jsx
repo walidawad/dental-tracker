@@ -92,16 +92,6 @@ function exportExcel(casesToExport, fileName = "dental_cases") {
   XLSX.writeFile(workbook, `${fileName}_${todayISO()}.xlsx`);
 }
 
-// دالة تحديث كلمة المرور
-async function updatePassword(newPassword, setToast) {
-  const { error } = await supabase.auth.updateUser({ password: newPassword });
-  if (error) {
-    setToast("❌ خطأ: " + error.message);
-  } else {
-    setToast("✅ تم تحديث كلمة المرور بنجاح!");
-  }
-}
-
 // ========== CSS ==========
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -337,7 +327,6 @@ body {
   display: inline-block;
 }
 
-/* القائمة المنسدلة المحسنة للموبايل */
 .dropdown-menu {
   position: fixed;
   background: var(--surface2);
@@ -547,79 +536,6 @@ body {
 }
 `;
 
-// ========== دالة الاستيراد من Excel ==========
-async function importExcel(file, userId, currentBranch, setToast) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const rows = XLSX.utils.sheet_to_json(worksheet);
-        
-        let count = 0;
-        for (const row of rows) {
-          let paymentStatus = row["الدفع"] || "Unpaid";
-          if (paymentStatus === "مدفوع" || paymentStatus === "مدفوع كامل") paymentStatus = "Paid";
-          if (paymentStatus === "مجاناً") paymentStatus = "Free";
-          if (paymentStatus.includes("مدفوع جزئي") || paymentStatus === "Partial") paymentStatus = "Partial";
-          if (paymentStatus === "غير مدفوع") paymentStatus = "Unpaid";
-          
-          let startDate = todayISO();
-          let actionDate = null;
-          
-          if (row["البداية"]) {
-            let dateStr = String(row["البداية"]);
-            if (dateStr.includes("-")) {
-              const parts = dateStr.split("-");
-              if (parts.length === 3 && parts[0].length <= 2) {
-                startDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
-              } else if (parts.length === 3 && parts[0].length === 4) {
-                startDate = dateStr;
-              }
-            }
-          }
-          
-          if (row["الإجراء"]) {
-            let dateStr = String(row["الإجراء"]);
-            if (dateStr.includes("-")) {
-              const parts = dateStr.split("-");
-              if (parts.length === 3 && parts[0].length <= 2) {
-                actionDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
-              }
-            }
-          }
-          
-          const rec = {
-            branchName: row["الفرع"] || currentBranch,
-            patientName: row["المريض"] || "",
-            materialName: row["المادة"] || "Zirconia",
-            pricePerUnit: parseFloat(row["السعر"]) || 450,
-            units: parseInt(row["الوحدات"]) || 1,
-            caseStatus: row["الحالة"] || "In progress",
-            paymentStatus: paymentStatus,
-            paidAmount: parseFloat(row["المحصل"]) || 0,
-            startDate: startDate,
-            actionDate: actionDate,
-            notes: row["ملاحظات"] || null,
-          };
-          
-          if (!rec.patientName) continue;
-          await insertCase(userId, rec);
-          count++;
-        }
-        resolve(count);
-      } catch (err) {
-        console.error("Import error:", err);
-        reject(err);
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  });
-}
-
 // ========== دوال Supabase الأساسية ==========
 async function getSettings(userId) {
   const { data } = await supabase.from("settings").select("*").eq("user_id", userId).single();
@@ -701,6 +617,79 @@ const toLocal = (r) => ({
   notes: r.notes,
   createdAt: r.created_at,
 });
+
+// دالة الاستيراد من Excel
+async function importExcel(file, userId, currentBranch, setToast) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(worksheet);
+        
+        let count = 0;
+        for (const row of rows) {
+          let paymentStatus = row["الدفع"] || "Unpaid";
+          if (paymentStatus === "مدفوع" || paymentStatus === "مدفوع كامل") paymentStatus = "Paid";
+          if (paymentStatus === "مجاناً") paymentStatus = "Free";
+          if (paymentStatus.includes("مدفوع جزئي") || paymentStatus === "Partial") paymentStatus = "Partial";
+          if (paymentStatus === "غير مدفوع") paymentStatus = "Unpaid";
+          
+          let startDate = todayISO();
+          let actionDate = null;
+          
+          if (row["البداية"]) {
+            let dateStr = String(row["البداية"]);
+            if (dateStr.includes("-")) {
+              const parts = dateStr.split("-");
+              if (parts.length === 3 && parts[0].length <= 2) {
+                startDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+              } else if (parts.length === 3 && parts[0].length === 4) {
+                startDate = dateStr;
+              }
+            }
+          }
+          
+          if (row["الإجراء"]) {
+            let dateStr = String(row["الإجراء"]);
+            if (dateStr.includes("-")) {
+              const parts = dateStr.split("-");
+              if (parts.length === 3 && parts[0].length <= 2) {
+                actionDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+              }
+            }
+          }
+          
+          const rec = {
+            branchName: row["الفرع"] || currentBranch,
+            patientName: row["المريض"] || "",
+            materialName: row["المادة"] || "Zirconia",
+            pricePerUnit: parseFloat(row["السعر"]) || 450,
+            units: parseInt(row["الوحدات"]) || 1,
+            caseStatus: row["الحالة"] || "In progress",
+            paymentStatus: paymentStatus,
+            paidAmount: parseFloat(row["المحصل"]) || 0,
+            startDate: startDate,
+            actionDate: actionDate,
+            notes: row["ملاحظات"] || null,
+          };
+          
+          if (!rec.patientName) continue;
+          await insertCase(userId, rec);
+          count++;
+        }
+        resolve(count);
+      } catch (err) {
+        console.error("Import error:", err);
+        reject(err);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
 
 // ========== COMPONENTS ==========
 
@@ -936,14 +925,12 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
     const dropdownHeight = 250;
     
     let top = rect.bottom + 5;
-    let positionClass = "";
     
     if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
       top = rect.top - dropdownHeight - 5;
-      positionClass = "top";
     }
     
-    setDropdownPosition({ top: top, left: rect.left, positionClass });
+    setDropdownPosition({ top: top, left: rect.left });
     setDropdownOpen(true);
   };
 
@@ -1063,7 +1050,7 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
   return null;
 }
 
-function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onUpdateMaterial, onUpdateStatus, onClose, setToast }) {
+function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose, setToast }) {
   const sm = STATUS_META[c.caseStatus] || {};
   const mc = MAT_COLORS[c.materialName] || "var(--mint)";
   const remaining = (c.totalAmount || 0) - (c.paidAmount || 0);
@@ -1316,8 +1303,8 @@ export default function App() {
   const [activeBranch, setActiveBranch] = useState("all");
   const [activeTab, setActiveTab] = useState("current");
   const [search, setSearch] = useState("");
-  const [selectedYear, setSelectedYear] = useState(2026);
-  const [selectedMonth, setSelectedMonth] = useState(5);
+  const [selectedYear, setSelectedYear] = useState("all");
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [showAdd, setShowAdd] = useState(false);
   const [editCase, setEditCase] = useState(null);
   const [detailCase, setDetailCase] = useState(null);
@@ -1353,16 +1340,18 @@ export default function App() {
     return { count, totalMoney, totalCollected };
   }, [cases]);
 
-  const branchFiltered = useMemo(() => 
-    activeBranch === "all" ? cases : cases.filter(c => c.branchName === activeBranch),
-    [cases, activeBranch]
-  );
-
+  // البحث شامل لكل الحالات (بدون فلتر سنة)
   const patientSearchFiltered = useMemo(() => {
-    if (!search.trim()) return branchFiltered;
+    if (!search.trim()) return cases;
     const q = search.toLowerCase().trim();
-    return branchFiltered.filter(c => c.patientName.toLowerCase().includes(q));
-  }, [branchFiltered, search]);
+    return cases.filter(c => c.patientName.toLowerCase().includes(q));
+  }, [cases, search]);
+
+  // فلتر الفرع بعد البحث
+  const branchFiltered = useMemo(() => 
+    activeBranch === "all" ? patientSearchFiltered : patientSearchFiltered.filter(c => c.branchName === activeBranch),
+    [patientSearchFiltered, activeBranch]
+  );
 
   const availableYears = useMemo(() => {
     const years = [];
@@ -1374,19 +1363,23 @@ export default function App() {
 
   // الفلترة حسب التبويب (شهري/سنوي/حسب الحالة)
   const tabFiltered = useMemo(() => {
-    let arr = patientSearchFiltered;
+    let arr = branchFiltered;
     
     if (activeTab === "current") {
-      const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
-      arr = arr.filter(c => {
-        const d = c.actionDate || c.startDate || c.createdAt;
-        return monthKey(d) === targetMonth;
-      });
+      if (selectedYear !== "all") {
+        const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
+        arr = arr.filter(c => {
+          const d = c.actionDate || c.startDate || c.createdAt;
+          return monthKey(d) === targetMonth;
+        });
+      }
     } else if (activeTab === "annual") {
-      arr = arr.filter(c => {
-        const d = c.actionDate || c.startDate || c.createdAt;
-        return d && new Date(d).getFullYear() === selectedYear;
-      });
+      if (selectedYear !== "all") {
+        arr = arr.filter(c => {
+          const d = c.actionDate || c.startDate || c.createdAt;
+          return d && new Date(d).getFullYear() === selectedYear;
+        });
+      }
     } else if (activeTab === "active") {
       arr = arr.filter(c => c.caseStatus === "In progress" || c.caseStatus === "Correction");
     } else if (activeTab === "missed") {
@@ -1396,9 +1389,9 @@ export default function App() {
     }
     
     return arr;
-  }, [patientSearchFiltered, activeTab, selectedYear, selectedMonth]);
+  }, [branchFiltered, activeTab, selectedYear, selectedMonth]);
 
-  // إحصائيات الشهر/السنة المحددة
+  // إحصائيات الفلتر الحالي
   const stats = useMemo(() => {
     const total = tabFiltered.reduce((s, c) => s + (c.totalAmount || 0), 0);
     const collected = tabFiltered.reduce((s, c) => s + (c.paidAmount || 0), 0);
@@ -1544,10 +1537,12 @@ export default function App() {
       
       <div className="month-selector-wrapper">
         <span className="branch-label">السنة:</span>
-        <select className="year-select" value={selectedYear} onChange={e => setSelectedYear(parseInt(e.target.value))}>
+        <select className="year-select" value={selectedYear} onChange={e => setSelectedYear(e.target.value)}>
+          <option value="all">📅 كل السنوات</option>
           {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
-        {activeTab === "current" && (
+        
+        {activeTab === "current" && selectedYear !== "all" && (
           <>
             <span className="branch-label">الشهر:</span>
             <select className="month-select" value={selectedMonth} onChange={e => setSelectedMonth(parseInt(e.target.value))}>
@@ -1604,7 +1599,7 @@ export default function App() {
         
         <div className="toolbar">
           <div className="search-wrap">
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 بحث باسم المريض..." />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 بحث باسم المريض (جميع السنوات)..." />
           </div>
         </div>
         
@@ -1673,8 +1668,6 @@ export default function App() {
         onEdit={c => { setEditCase(c); setDetailCase(null); }} 
         onDelete={handleDelete} 
         onUpdatePayment={handleUpdatePayment}
-        onUpdateMaterial={handleUpdateMaterial}
-        onUpdateStatus={handleUpdateCaseStatus}
         onClose={() => setDetailCase(null)}
         setToast={setToast}
       />}
