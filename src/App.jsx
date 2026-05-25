@@ -61,8 +61,10 @@ const CSS = `
 
 :root {
   --bg: #080B12;
+  --bg2: #0D1117;
   --surface: #111621;
   --surface2: #161C2A;
+  --surface3: #1D2438;
   --border: rgba(255,255,255,0.07);
   --border2: rgba(255,255,255,0.12);
   --accent: #3D7EFF;
@@ -82,6 +84,7 @@ const CSS = `
 html { 
   direction: rtl;
   -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
 }
 
 body {
@@ -91,15 +94,19 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   width: 100%;
+  max-width: 100%;
 }
 
-::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
-@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; } }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
 @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:none; opacity:1; } }
+
+.fade-up { animation: fadeUp .35s ease both; }
+.fade-in { animation: fadeIn .25s ease both; }
 
 .login-shell {
   min-height: 100vh;
@@ -109,109 +116,136 @@ body {
   width: 100%;
   overflow-x: hidden;
 }
-
 .login-card {
   background: var(--surface);
   border: 1px solid var(--border2);
   border-radius: 20px;
   padding: 40px 36px;
-  width: 100%;
-  max-width: 420px;
+  width: 100%; max-width: 420px;
+  box-shadow: 0 40px 80px rgba(0,0,0,.6);
   animation: fadeUp .4s ease;
 }
-
 .login-logo { text-align: center; margin-bottom: 32px; }
-
 .login-logo-icon {
   width: 64px; height: 64px; border-radius: 20px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   display: inline-flex; align-items: center; justify-content: center;
   font-size: 28px; margin-bottom: 14px;
+  box-shadow: 0 8px 24px rgba(61,126,255,.4);
 }
-
-.login-logo h1 { font-size: 20px; font-weight: 800; }
+.login-logo h1 { font-size: 20px; font-weight: 800; color: var(--text); }
 .login-logo p { font-size: 13px; color: var(--text2); margin-top: 4px; }
-
-.form-group { margin-bottom: 14px; }
-.form-label { display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
-
-.form-input {
-  width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--r2);
-  padding: 10px 13px;
-  color: var(--text);
-  font-family: 'Tajawal', sans-serif;
-  font-size: 14px;
-  outline: none;
-  box-sizing: border-box;
-}
-
-.form-input:focus { border-color: var(--accent); }
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: var(--r2);
-  font-family: 'Tajawal', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: #3070e8; }
-.btn-ghost { background: var(--surface2); border: 1px solid var(--border2); color: var(--text2); }
-.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-.btn-danger { background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3); color: var(--rose); }
-.btn-danger:hover { background: var(--rose); color: #fff; }
-.btn-sm { padding: 6px 12px; font-size: 12px; }
-.btn-icon { padding: 7px; }
 
 .header {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  position: sticky; top: 0; z-index: 100;
   padding: 0 24px;
   width: 100%;
   overflow-x: hidden;
 }
-
 .header-top {
   height: 58px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
   width: 100%;
+  overflow-x: auto;
 }
-
 .header-title {
-  font-size: 17px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-size: 17px; font-weight: 800; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
   white-space: nowrap;
 }
-
-.header-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
+.header-title .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  flex-shrink: 0;
+}
+.header-actions { 
+  display: flex; gap: 8px; align-items: center;
+  flex-shrink: 0;
+  overflow-x: auto;
 }
 
-.main {
-  padding: 14px;
-  max-width: 1400px;
+.branch-bar {
+  padding: 0 24px 12px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  width: 100%;
+  overflow-x: auto;
+}
+.branch-label { font-size: 11px; color: var(--text3); font-weight: 700; white-space: nowrap; }
+.branch-select {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  color: var(--accent);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 14px; font-weight: 700;
+  padding: 6px 12px;
+  outline: none; cursor: pointer;
+  flex-shrink: 0;
+}
+.branch-select:focus { border-color: var(--accent); }
+
+.month-selector-wrapper {
+  padding: 8px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+  overflow-x: auto;
+}
+.year-select {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  color: var(--text);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 12px;
+  outline: none; cursor: pointer;
+  flex-shrink: 0;
+}
+.month-select {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  color: var(--text);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 12px;
+  outline: none; cursor: pointer;
+  flex-shrink: 0;
+}
+
+.tabs {
+  display: flex; gap: 4px;
+  padding: 8px 24px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  width: 100%;
+}
+.tab {
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 12px; font-weight: 700;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  cursor: pointer; white-space: nowrap;
+  background: transparent;
+  font-family: 'Tajawal', sans-serif;
+  flex-shrink: 0;
+}
+.tab:hover { border-color: var(--accent); color: var(--accent); }
+.tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.main { 
+  padding: 20px 24px; 
+  max-width: 1400px; 
   margin: 0 auto;
   width: 100%;
   overflow-x: hidden;
@@ -220,83 +254,141 @@ body {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; 
   margin-bottom: 20px;
+  width: 100%;
 }
-
 .stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r);
   padding: 16px;
+  position: relative; 
+  overflow: hidden;
   animation: fadeUp .3s ease both;
 }
-
+.stat-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--card-color, transparent) 0%, transparent 60%);
+  opacity: .06; pointer-events: none;
+}
 .stat-label { font-size: 11px; color: var(--text2); font-weight: 700; margin-bottom: 8px; }
-.stat-value { font-size: 18px; font-weight: 900; word-break: break-word; }
+.stat-value { font-size: 22px; font-weight: 900; line-height: 1; word-break: break-word; }
 
-.toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-
-.search-wrap {
-  position: relative;
-  flex: 1;
+.toolbar {
+  display: flex; gap: 10px; align-items: center;
+  margin-bottom: 16px; 
+  flex-wrap: wrap;
+  width: 100%;
+}
+.search-wrap { 
+  position: relative; 
+  flex: 1; 
   min-width: 200px;
   width: 100%;
 }
-
-.search-wrap input { width: 100%; padding: 9px 14px; }
+.search-wrap input {
+  width: 100%; 
+  padding: 9px 36px 9px 14px;
+  background: var(--surface2); 
+  border: 1px solid var(--border);
+  border-radius: var(--r2); 
+  color: var(--text);
+  font-family: 'Tajawal', sans-serif; 
+  font-size: 14px; 
+  outline: none;
+  box-sizing: border-box;
+}
+.search-wrap input:focus { border-color: var(--accent); }
 
 .cases-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 12px;
+  width: 100%;
 }
-
 .case-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  padding: 12px;
+  padding: 16px;
   position: relative;
+  overflow: visible;
+  transition: all .18s;
   animation: fadeUp .3s ease both;
 }
-
-.case-card:hover { border-color: var(--border2); }
-
+.case-card:hover { border-color: var(--border2); transform: translateY(-2px); }
 .case-card::after {
   content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
+  position: absolute; right: 0; top: 0; bottom: 0;
   width: 3px;
   background: var(--status-color, var(--border));
   border-radius: 0 var(--r) var(--r) 0;
 }
-
-.case-name { font-size: 14px; font-weight: 700; word-break: break-word; }
-.case-date { font-size: 11px; color: var(--text3); margin-top: 2px; }
-
-.case-badges {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-  margin-bottom: 8px;
+.case-clickable-area {
+  cursor: pointer;
 }
-
-.case-amount { font-size: 16px; font-weight: 800; }
-.case-units { font-size: 10px; color: var(--text3); }
-.case-branch { font-size: 10px; color: var(--text2); background: var(--surface2); padding: 3px 6px; border-radius: 20px; }
+.case-card-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: flex-start; 
+  margin-bottom: 10px;
+  gap: 8px;
+}
+.case-name { 
+  font-size: 15px; 
+  font-weight: 700; 
+  color: var(--text);
+  word-break: break-word;
+}
+.case-date { 
+  font-size: 11px; 
+  color: var(--text3); 
+  margin-top: 2px;
+  white-space: nowrap;
+}
+.case-badges { 
+  display: flex; 
+  gap: 6px; 
+  flex-wrap: wrap; 
+  margin-bottom: 10px; 
+  position: relative;
+}
+.case-footer { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.case-amount { 
+  font-size: 18px; 
+  font-weight: 800;
+  word-break: break-word;
+}
+.case-units { 
+  font-size: 11px; 
+  color: var(--text3);
+  white-space: nowrap;
+}
+.case-branch { 
+  font-size: 11px; 
+  color: var(--text2); 
+  background: var(--surface2); 
+  padding: 3px 8px; 
+  border-radius: 20px;
+  white-space: nowrap;
+}
 
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
+  padding: 3px 9px;
   border-radius: 20px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
   flex-shrink: 0;
@@ -313,17 +405,14 @@ body {
   border: 1px solid var(--border2);
   border-radius: var(--r2);
   z-index: 2000;
-  min-width: 140px;
-  max-width: 220px;
+  min-width: 150px;
+  max-width: 200px;
   box-shadow: 0 8px 24px rgba(0,0,0,.4);
-  overflow: visible;
+  overflow: hidden;
   top: 100%;
   right: 0;
-  margin-top: 6px;
-  max-height: none;
-  overflow-y: visible;
+  margin-top: 4px;
 }
-
 .dropdown-menu.top {
   top: auto;
   bottom: 100%;
@@ -331,145 +420,374 @@ body {
 }
 
 .dropdown-item {
-  padding: 8px 10px;
-  font-size: 11px;
+  padding: 10px 14px;
+  font-size: 13px;
   cursor: pointer;
+  transition: background .1s;
   text-align: center;
   border-bottom: 1px solid var(--border);
   word-break: break-word;
 }
-
-.dropdown-item:last-child { border-bottom: none; }
-.dropdown-item:hover { background: var(--accent); color: #fff; }
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.7);
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+.dropdown-item:hover {
+  background: var(--accent);
+  color: #fff;
 }
 
+.btn {
+  display: inline-flex; 
+  align-items: center; 
+  gap: 6px;
+  padding: 8px 16px; 
+  border-radius: var(--r2);
+  font-family: 'Tajawal', sans-serif; 
+  font-size: 13px; 
+  font-weight: 700;
+  border: none; 
+  cursor: pointer; 
+  transition: all .18s; 
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #3070e8; box-shadow: 0 4px 16px rgba(61,126,255,.4); }
+.btn-ghost { background: var(--surface2); border: 1px solid var(--border2); color: var(--text2); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3); color: var(--rose); }
+.btn-danger:hover { background: var(--rose); color: #fff; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-icon { padding: 7px; border-radius: var(--r2); }
+.btn-fab {
+  position: fixed; bottom: 28px; right: 28px;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; font-size: 24px;
+  display: flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; z-index: 90;
+  box-shadow: 0 8px 24px rgba(61,126,255,.5);
+}
+.btn-fab:hover { transform: scale(1.08); }
+
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.7); backdrop-filter: blur(6px);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; animation: fadeIn .2s ease;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
 .modal {
   background: var(--surface);
   border: 1px solid var(--border2);
   border-radius: 18px;
-  width: 100%;
-  max-width: 560px;
+  width: 100%; max-width: 560px;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 40px 80px rgba(0,0,0,.7);
   animation: fadeUp .25s ease;
+  box-sizing: border-box;
 }
-
 .modal-header {
-  padding: 20px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: 20px 24px 0;
+  display: flex; justify-content: space-between; align-items: center;
+  position: sticky; top: 0;
+  background: var(--surface); z-index: 1;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  background: var(--surface);
-  z-index: 1;
 }
-
 .modal-title { font-size: 16px; font-weight: 800; }
 .modal-body { padding: 20px 24px; }
 .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
 
-.form-row { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
+.form-input {
+  width: 100%;
+  background: var(--surface2); 
+  border: 1px solid var(--border);
+  border-radius: var(--r2); 
+  padding: 10px 13px;
+  color: var(--text); 
+  font-family: 'Tajawal', sans-serif; 
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+.form-input:focus { border-color: var(--accent); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-textarea { min-height: 72px; resize: vertical; }
 
 .total-preview {
   background: linear-gradient(135deg, rgba(61,126,255,.1), rgba(108,99,255,.08));
   border: 1px solid rgba(61,126,255,.25);
-  border-radius: var(--r);
-  padding: 14px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  border-radius: var(--r); padding: 14px 16px;
+  display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 14px;
 }
-
 .total-preview-label { font-size: 12px; color: var(--text2); }
-.total-preview-value { font-size: 20px; font-weight: 900; color: var(--gold); word-break: break-word; }
+.total-preview-value { 
+  font-size: 26px; 
+  font-weight: 900; 
+  color: var(--gold); 
+  font-family: 'JetBrains Mono', monospace;
+  word-break: break-word;
+}
 
+.drawer-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5); z-index: 150;
+  animation: fadeIn .2s ease;
+}
 .drawer {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   width: 100%;
+  max-width: 100vw;
   background: var(--surface);
+  border-right: 1px solid var(--border2);
   overflow-y: auto;
   z-index: 151;
-  animation: slideUp .25s ease;
-  border-top: 1px solid var(--border2);
+  animation: slideIn .25s ease;
+  box-shadow: 8px 0 40px rgba(0,0,0,.5);
 }
-
+@media (min-width: 640px) {
+  .drawer {
+    width: min(480px, 100vw);
+  }
+}
 .drawer-header {
-  padding: 20px;
+  padding: 20px 20px 16px;
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
   gap: 12px;
 }
-
 .drawer-body { padding: 20px; }
 .drawer-section { margin-bottom: 24px; }
-.drawer-section-title { font-size: 10px; font-weight: 700; color: var(--text3); margin-bottom: 10px; }
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
+.drawer-section-title {
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 10px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-row { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 8px 0; 
   border-bottom: 1px solid var(--border);
   gap: 12px;
 }
-
 .detail-key { font-size: 12px; color: var(--text2); }
-.detail-val { font-size: 12px; font-weight: 600; color: var(--text); word-break: break-word; }
+.detail-val { 
+  font-size: 13px; 
+  font-weight: 600; 
+  color: var(--text); 
+  text-align: left;
+  word-break: break-word;
+}
+
+.settings-section { margin-bottom: 28px; }
+.settings-section-title {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+}
+.settings-list-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px;
+  background: var(--surface2); 
+  border: 1px solid var(--border);
+  border-radius: var(--r2); 
+  margin-bottom: 6px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.settings-list-item-name { 
+  font-size: 13px; 
+  font-weight: 600;
+  word-break: break-word;
+}
+.settings-list-item-sub { 
+  font-size: 11px; 
+  color: var(--text2);
+}
 
 .toast {
-  position: fixed;
-  bottom: 90px;
-  left: 50%;
+  position: fixed; 
+  bottom: 90px; 
+  left: 50%; 
   transform: translateX(-50%);
-  background: var(--surface2);
+  background: var(--surface2); 
   border: 1px solid var(--border2);
-  padding: 10px 20px;
+  padding: 10px 20px; 
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 13px; 
+  font-weight: 600; 
   color: var(--text);
-  z-index: 300;
+  z-index: 300; 
+  animation: fadeUp .25s ease;
+  white-space: normal;
   max-width: 90%;
 }
 
-.empty { text-align: center; padding: 40px 20px; color: var(--text3); }
-.empty-icon { font-size: 40px; margin-bottom: 12px; opacity: .3; }
+.empty { 
+  text-align: center; 
+  padding: 60px 20px; 
+  color: var(--text3);
+  width: 100%;
+}
+.empty-icon { 
+  font-size: 48px; 
+  margin-bottom: 12px; 
+  opacity: .3; 
+}
+.empty-msg { 
+  font-size: 14px;
+  word-break: break-word;
+}
 
-.loading { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 40px 20px; color: var(--text2); }
-.spinner { width: 18px; height: 18px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+.loading { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 8px; 
+  padding: 40px 20px; 
+  color: var(--text2);
+  width: 100%;
+  min-height: 100vh;
+}
+.spinner { 
+  width: 18px; 
+  height: 18px; 
+  border: 2px solid var(--border2); 
+  border-top-color: var(--accent); 
+  border-radius: 50%; 
+  animation: spin .7s linear infinite; 
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .divider { height: 1px; background: var(--border); margin: 12px 0; }
 
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: none; } }
-
 @media (max-width: 640px) {
-  .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .case-card { padding: 10px; }
-  .stat-value { font-size: 16px; }
-  .header-actions .btn { padding: 4px 10px; font-size: 11px; }
-  .btn-fab { width: 48px; height: 48px; bottom: 20px; right: 20px; font-size: 20px; }
+  .main { 
+    padding: 14px; 
+    width: 100%;
+  }
+  .stats-grid { 
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px;
+  }
+  .cases-grid { 
+    grid-template-columns: 1fr;
+  }
+  .form-row { 
+    grid-template-columns: 1fr; 
+  }
+  .month-selector-wrapper { 
+    flex-direction: column; 
+    align-items: flex-start; 
+  }
+  .badge { 
+    padding: 2px 6px;
+    font-size: 10px;
+  }
+  .header { 
+    padding: 0 14px; 
+  }
+  .branch-bar, .tabs { 
+    padding-right: 14px; 
+    padding-left: 14px; 
+  }
+  .header-top {
+    gap: 6px;
+  }
+  .header-actions .btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .case-card {
+    padding: 12px;
+  }
+  .case-name {
+    font-size: 14px;
+  }
+  .case-amount {
+    font-size: 16px;
+  }
+  .stat-value {
+    font-size: 18px;
+  }
+  .modal-footer {
+    justify-content: stretch;
+  }
+  .modal-footer .btn {
+    flex: 1;
+    justify-content: center;
+  }
+  .dropdown-menu {
+    position: fixed;
+    bottom: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 90vw;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .cases-grid {
+    grid-template-columns: 1fr;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .header-title {
+    font-size: 15px;
+  }
+  .modal {
+    border-radius: 12px;
+    max-width: 95vw;
+  }
+  .btn-fab {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+    bottom: 20px;
+    right: 20px;
+  }
 }
 `;
 
-// ========== SUPABASE FUNCTIONS ==========
+function Badge({ label, color, bg, icon }) {
+  return (
+    <span className="badge" style={{ color, background: bg, border: `1px solid ${color}30` }}>
+      {icon && <span>{icon}</span>}
+      {label}
+    </span>
+  );
+}
+
+function Toast({ msg }) {
+  return msg ? <div className="toast">{msg}</div> : null;
+}
+
+function Spinner() {
+  return <div className="loading"><div className="spinner" /><span>جاري التحميل...</span></div>;
+}
 
 async function getSettings(userId) {
   const { data } = await supabase.from("settings").select("*").eq("user_id", userId).single();
@@ -502,7 +820,10 @@ async function saveSettings(userId, settings) {
 }
 
 async function fetchCases(userId) {
-  const { data } = await supabase.from("cases").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+  const { data } = await supabase
+    .from("cases").select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
   return data || [];
 }
 
@@ -558,9 +879,17 @@ function exportCSV(casesToExport) {
 
   const headers = ["الفرع", "المريض", "المادة", "السعر", "الوحدات", "الحالة", "الدفع", "المحصل", "البداية", "الإجراء", "ملاحظات"];
   const rows = casesToExport.map(c => [
-    c.branchName, c.patientName, c.materialName, c.pricePerUnit, c.units, c.caseStatus,
+    c.branchName,
+    c.patientName,
+    c.materialName,
+    c.pricePerUnit,
+    c.units,
+    c.caseStatus,
     c.paymentStatus === "Paid" ? "مدفوع" : (c.paymentStatus === "Free" ? "مجاناً" : (c.paymentStatus === "Partial" ? "مدفوع جزئي" : "غير مدفوع")),
-    c.paidAmount || 0, formatDate(c.startDate), c.actionDate ? formatDate(c.actionDate) : "", c.notes || ""
+    c.paidAmount || 0,
+    formatDate(c.startDate),
+    c.actionDate ? formatDate(c.actionDate) : "",
+    c.notes || ""
   ]);
   const csv = "\uFEFF" + [headers, ...rows].map(r => r.map(v => `"${v}"`).join(",")).join("\n");
   const a = document.createElement("a");
@@ -569,23 +898,93 @@ function exportCSV(casesToExport) {
   a.click();
 }
 
-// ========== COMPONENTS ==========
-
-function Badge({ label, color, bg, icon }) {
-  return (
-    <span className="badge" style={{ color, background: bg, border: `1px solid ${color}30` }}>
-      {icon && <span>{icon}</span>}
-      {label}
-    </span>
-  );
-}
-
-function Toast({ msg }) {
-  return msg ? <div className="toast">{msg}</div> : null;
-}
-
-function Spinner() {
-  return <div className="loading"><div className="spinner" /><span>جاري التحميل...</span></div>;
+async function importCSV(file, userId, currentBranch) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const text = e.target.result.replace(/^\uFEFF/, "");
+        const lines = text.split("\n");
+        const headers = lines[0].split(",").map(h => h.replace(/^"|"$/g, "").trim());
+        
+        const colIndex = {
+          branch: headers.findIndex(h => h.includes("الفرع")),
+          patient: headers.findIndex(h => h.includes("المريض")),
+          material: headers.findIndex(h => h.includes("المادة")),
+          price: headers.findIndex(h => h.includes("السعر")),
+          units: headers.findIndex(h => h.includes("الوحدات")),
+          caseStatus: headers.findIndex(h => h.includes("الحالة")),
+          paymentStatus: headers.findIndex(h => h.includes("الدفع")),
+          paidAmount: headers.findIndex(h => h.includes("المحصل")),
+          startDate: headers.findIndex(h => h.includes("البداية")),
+          actionDate: headers.findIndex(h => h.includes("الإجراء")),
+          notes: headers.findIndex(h => h.includes("ملاحظات"))
+        };
+        
+        let count = 0;
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          
+          const cols = line.match(/(".*?"|[^,]+)(?=,|$)/g);
+          if (!cols || cols.length < 5) continue;
+          
+          const clean = cols.map(c => c.replace(/^"|"$/g, "").trim());
+          
+          let paymentStatus = colIndex.paymentStatus >= 0 && clean[colIndex.paymentStatus] ? clean[colIndex.paymentStatus] : "Unpaid";
+          if (paymentStatus === "مدفوع" || paymentStatus === "مدفوع كامل") paymentStatus = "Paid";
+          if (paymentStatus === "مجاناً") paymentStatus = "Free";
+          if (paymentStatus.includes("مدفوع جزئي") || paymentStatus === "Partial") paymentStatus = "Partial";
+          if (paymentStatus === "غير مدفوع") paymentStatus = "Unpaid";
+          
+          let startDate = todayISO();
+          if (colIndex.startDate >= 0 && clean[colIndex.startDate]) {
+            let dateStr = clean[colIndex.startDate];
+            if (dateStr.includes("/")) {
+              const parts = dateStr.split("/");
+              if (parts.length === 3) startDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+            } else if (dateStr.includes("-")) {
+              startDate = dateStr;
+            }
+          }
+          
+          let actionDate = null;
+          if (colIndex.actionDate >= 0 && clean[colIndex.actionDate]) {
+            let dateStr = clean[colIndex.actionDate];
+            if (dateStr.includes("/")) {
+              const parts = dateStr.split("/");
+              if (parts.length === 3) actionDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+            } else if (dateStr.includes("-")) {
+              actionDate = dateStr;
+            }
+          }
+          
+          const rec = {
+            branchName: (colIndex.branch >= 0 && clean[colIndex.branch]) ? clean[colIndex.branch] : currentBranch,
+            patientName: (colIndex.patient >= 0 && clean[colIndex.patient]) ? clean[colIndex.patient] : "",
+            materialName: (colIndex.material >= 0 && clean[colIndex.material]) ? clean[colIndex.material] : "Zirconia",
+            pricePerUnit: (colIndex.price >= 0 && clean[colIndex.price]) ? parseFloat(clean[colIndex.price]) || 450 : 450,
+            units: (colIndex.units >= 0 && clean[colIndex.units]) ? parseInt(clean[colIndex.units]) || 1 : 1,
+            caseStatus: (colIndex.caseStatus >= 0 && clean[colIndex.caseStatus]) ? clean[colIndex.caseStatus] : "In progress",
+            paymentStatus: paymentStatus,
+            paidAmount: (colIndex.paidAmount >= 0 && clean[colIndex.paidAmount]) ? parseFloat(clean[colIndex.paidAmount]) || 0 : 0,
+            startDate: startDate,
+            actionDate: actionDate,
+            notes: (colIndex.notes >= 0 && clean[colIndex.notes]) ? clean[colIndex.notes] : null,
+          };
+          
+          if (!rec.patientName) continue;
+          await insertCase(userId, rec);
+          count++;
+        }
+        resolve(count);
+      } catch (err) {
+        console.error("Import error:", err);
+        reject(err);
+      }
+    };
+    reader.readAsText(file);
+  });
 }
 
 function LoginScreen({ onLogin }) {
@@ -633,7 +1032,7 @@ function LoginScreen({ onLogin }) {
             <label className="form-label">كلمة المرور</label>
             <input className="form-input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
           </div>
-          {err && <div style={{ fontSize: 13, color: err.includes("✉️") ? "var(--mint)" : "var(--rose)", marginBottom: 12, padding: "8px 12px" }}>{err}</div>}
+          {err && <div style={{ fontSize: 13, color: err.includes("✉️") ? "var(--mint)" : "var(--rose)", marginBottom: 12, padding: "8px 12px", background: "rgba(239,68,68,.08)", borderRadius: 8 }}>{err}</div>}
           <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: "100%", justifyContent: "center", padding: "12px" }}>
             {loading ? "جاري..." : mode === "login" ? "تسجيل الدخول" : "إنشاء حساب"}
           </button>
@@ -663,8 +1062,32 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
     actionDate: existing?.actionDate || "",
     notes: existing?.notes || "",
   });
+  const [prevStatus, setPrevStatus] = useState(existing?.caseStatus || "In progress");
   const [loading, setLoading] = useState(false);
   const total = (form.pricePerUnit || 0) * (form.units || 0);
+  const remaining = total - (form.paidAmount || 0);
+  const selMat = settings.materials.find(m => m.name === form.materialName);
+  const priceFixed = selMat?.price !== null && selMat?.price !== undefined;
+
+  function handleMaterial(name) {
+    const mat = settings.materials.find(m => m.name === name);
+    setForm(f => ({
+      ...f,
+      materialName: name,
+      pricePerUnit: isEdit ? f.pricePerUnit : (mat?.price !== null && mat?.price !== undefined ? mat.price : f.pricePerUnit),
+    }));
+  }
+
+  function handleStatus(s) {
+    const wasActive = prevStatus === "In progress" || prevStatus === "Correction";
+    const becomingFinal = s !== "In progress" && s !== "Correction";
+    setForm(f => ({
+      ...f,
+      caseStatus: s,
+      actionDate: wasActive && becomingFinal ? todayISO() : f.actionDate,
+    }));
+    setPrevStatus(s);
+  }
 
   async function submit() {
     if (!form.patientName.trim()) return;
@@ -677,59 +1100,91 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <span className="modal-title">{isEdit ? "✏️ تعديل" : "➕ حالة جديدة"}</span>
+          <span className="modal-title">{isEdit ? "✏️ تعديل الحالة" : "➕ حالة جديدة"}</span>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
           <div className="total-preview">
-            <div><div className="total-preview-label">الإجمالي</div></div>
+            <div>
+              <div className="total-preview-label">إجمالي الحالة</div>
+              <div className="total-preview-calc">{form.units} وحدة × {form.pricePerUnit} = {total.toLocaleString("ar-EG")}</div>
+            </div>
             <div className="total-preview-value">{total.toLocaleString("ar-EG")}</div>
           </div>
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">اسم المريض *</label>
-              <input className="form-input" value={form.patientName} onChange={e => setForm(f => ({ ...f, patientName: e.target.value }))} />
+              <input className="form-input" value={form.patientName} onChange={e => setForm(f => ({ ...f, patientName: e.target.value }))} placeholder="الاسم كاملاً" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">الفرع</label>
+              <select className="form-input" value={form.branchName} onChange={e => setForm(f => ({ ...f, branchName: e.target.value }))}>
+                {settings.branches.map(b => <option key={b} value={b}>{b}</option>)}
+              </select>
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">الفرع</label>
-            <select className="form-input" value={form.branchName} onChange={e => setForm(f => ({ ...f, branchName: e.target.value }))}>
-              {settings.branches.map(b => <option key={b} value={b}>{b}</option>)}
-            </select>
-          </div>
-          <div className="form-group">
-            <label className="form-label">المادة</label>
-            <select className="form-input" value={form.materialName} onChange={e => setForm(f => ({ ...f, materialName: e.target.value }))}>
-              {settings.materials.map(m => <option key={m.id} value={m.name}>{m.name}</option>)}
+            <label className="form-label">المادة / الإجراء</label>
+            <select className="form-input" value={form.materialName} onChange={e => handleMaterial(e.target.value)}>
+              {settings.materials.map(m => (
+                <option key={m.id} value={m.name}>{m.name}{m.price ? ` — ${m.price} ج.م` : " — سعر حر"}</option>
+              ))}
             </select>
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">الوحدات</label>
+              <label className="form-label">عدد الوحدات</label>
               <input className="form-input" type="number" min="1" value={form.units} onChange={e => setForm(f => ({ ...f, units: parseInt(e.target.value) || 1 }))} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">سعر الوحدة {priceFixed && !isEdit ? <span style={{ color: "var(--text3)", fontSize: 10 }}>🔒 محدد</span> : ""}</label>
+              <input className="form-input" type="number" value={form.pricePerUnit} disabled={priceFixed && !isEdit} onChange={e => setForm(f => ({ ...f, pricePerUnit: parseFloat(e.target.value) || 0 }))} style={priceFixed && !isEdit ? { opacity: .6 } : {}} />
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">حالة الكيس</label>
+              <select className="form-input" value={form.caseStatus} onChange={e => handleStatus(e.target.value)}>
+                {settings.caseStatuses.map(s => (
+                  <option key={s.id} value={s.name}>{STATUS_META[s.name]?.icon} {s.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">حالة الدفع</label>
+              <select className="form-input" value={form.paymentStatus} onChange={e => setForm(f => ({ ...f, paymentStatus: e.target.value }))}>
+                {settings.paymentStatuses.map(s => <option key={s.id} value={s.name}>{s.name === "Paid" ? "مدفوع كامل" : (s.name === "Free" ? "مجاناً" : (s.name === "Partial" ? "مدفوع جزئي" : "غير مدفوع"))}</option>)}
+              </select>
+            </div>
+          </div>
+          {form.paymentStatus === "Partial" && (
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">المبلغ المحصل</label>
+                <input className="form-input" type="number" value={form.paidAmount} onChange={e => setForm(f => ({ ...f, paidAmount: parseFloat(e.target.value) || 0 }))} placeholder="المبلغ المدفوع" />
+                <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 4 }}>المتبقي: {remaining.toLocaleString("ar-EG")} ج.م</div>
+              </div>
+            </div>
+          )}
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">تاريخ البداية</label>
+              <input className="form-input" type="date" value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">تاريخ الإجراء</label>
+              <input className="form-input" type="date" value={form.actionDate} onChange={e => setForm(f => ({ ...f, actionDate: e.target.value }))} />
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">حالة الكيس</label>
-            <select className="form-input" value={form.caseStatus} onChange={e => setForm(f => ({ ...f, caseStatus: e.target.value }))}>
-              {settings.caseStatuses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-            </select>
-          </div>
-          <div className="form-group">
-            <label className="form-label">حالة الدفع</label>
-            <select className="form-input" value={form.paymentStatus} onChange={e => setForm(f => ({ ...f, paymentStatus: e.target.value }))}>
-              {settings.paymentStatuses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-            </select>
-          </div>
-          <div className="form-group">
-            <label className="form-label">تاريخ البداية</label>
-            <input className="form-input" type="date" value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
+            <label className="form-label">ملاحظات إكلينيكية</label>
+            <textarea className="form-input form-textarea" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="أي تفاصيل إضافية عن الحالة..." />
           </div>
         </div>
         <div className="modal-footer">
           <button className="btn btn-ghost" onClick={onClose}>إلغاء</button>
-          <button className="btn btn-primary" onClick={submit} disabled={loading}>
-            {loading ? "جاري..." : isEdit ? "حفظ" : "إضافة"}
+          <button className="btn btn-primary" onClick={submit} disabled={loading || !form.patientName.trim()}>
+            {loading ? "جاري الحفظ..." : isEdit ? "💾 حفظ التعديل" : "➕ إضافة الحالة"}
           </button>
         </div>
       </div>
@@ -737,6 +1192,7 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
   );
 }
 
+// ========== المكون المحدث للقوائم المنسدلة ==========
 function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, onPaymentChange }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -747,7 +1203,7 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
         setDropdownOpen(false);
       }
     }
-
+    
     if (dropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("touchstart", handleClickOutside);
@@ -758,13 +1214,14 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
     }
   }, [dropdownOpen]);
 
+  // قائمة الحالات (Case Status)
   if (type === 'status') {
     const sm = STATUS_META[c.caseStatus] || {};
     return (
       <div className="dropdown-container" ref={dropdownRef}>
         <span 
           className="badge" 
-          style={{ color: sm.color, background: sm.bg, border: `1px solid ${sm.color}30`, cursor: 'pointer' }}
+          style={{ color: sm.color, background: sm.bg, border: `1px solid ${sm.color}30`, cursor: 'pointer' }} 
           onClick={() => setDropdownOpen(!dropdownOpen)}
         >
           {sm.icon} {c.caseStatus} {dropdownOpen ? '▲' : '▼'}
@@ -772,10 +1229,7 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
         {dropdownOpen && (
           <div className="dropdown-menu">
             {settings.caseStatuses.map(s => (
-              <div key={s.id} className="dropdown-item" onClick={() => {
-                onStatusChange(c, s.name);
-                setDropdownOpen(false);
-              }}>
+              <div key={s.id} className="dropdown-item" onClick={() => { onStatusChange(c, s.name); setDropdownOpen(false); }}>
                 {STATUS_META[s.name]?.icon} {s.name}
               </div>
             ))}
@@ -785,13 +1239,14 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
     );
   }
 
+  // قائمة المواد (Material)
   if (type === 'material') {
     const mc = MAT_COLORS[c.materialName] || "var(--mint)";
     return (
       <div className="dropdown-container" ref={dropdownRef}>
         <span 
           className="badge" 
-          style={{ color: mc, background: mc + "20", cursor: 'pointer' }}
+          style={{ color: mc, background: mc + "20", cursor: 'pointer' }} 
           onClick={() => setDropdownOpen(!dropdownOpen)}
         >
           {c.materialName} {dropdownOpen ? '▲' : '▼'}
@@ -799,11 +1254,8 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
         {dropdownOpen && (
           <div className="dropdown-menu">
             {settings.materials.map(m => (
-              <div key={m.id} className="dropdown-item" onClick={() => {
-                onMaterialChange(c, m.name);
-                setDropdownOpen(false);
-              }}>
-                {m.name}
+              <div key={m.id} className="dropdown-item" onClick={() => { onMaterialChange(c, m.name); setDropdownOpen(false); }}>
+                {m.name} {m.price ? `(${m.price})` : '(سعر حر)'}
               </div>
             ))}
           </div>
@@ -812,25 +1264,31 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
     );
   }
 
+  // قائمة الدفع (Payment)
   if (type === 'payment') {
-    const paymentColor = c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : "var(--rose)");
+    const getPaymentLabel = (status, paidAmount) => {
+      if (status === "Paid") return "مدفوع كامل";
+      if (status === "Free") return "مجاناً";
+      if (status === "Partial") return `مدفوع جزئي (${fmtMoney(paidAmount)})`;
+      return "غير مدفوع";
+    };
+    const paymentColor = c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)"));
+    const paymentBg = c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : (c.paymentStatus === "Partial" ? "rgba(155,142,255,.12)" : "rgba(239,68,68,.12)"));
+    
     return (
       <div className="dropdown-container" ref={dropdownRef}>
         <span 
           className="badge" 
-          style={{ color: paymentColor, cursor: 'pointer' }}
+          style={{ color: paymentColor, background: paymentBg, border: `1px solid ${paymentColor}30`, cursor: 'pointer' }} 
           onClick={() => setDropdownOpen(!dropdownOpen)}
         >
-          {c.paymentStatus} {dropdownOpen ? '▲' : '▼'}
+          {getPaymentLabel(c.paymentStatus, c.paidAmount)} {dropdownOpen ? '▲' : '▼'}
         </span>
         {dropdownOpen && (
           <div className="dropdown-menu">
-            {["Paid", "Unpaid", "Free"].map(s => (
-              <div key={s} className="dropdown-item" onClick={() => {
-                onPaymentChange(c, s);
-                setDropdownOpen(false);
-              }}>
-                {s}
+            {settings.paymentStatuses.filter(s => s.name !== "Partial").map(s => (
+              <div key={s.id} className="dropdown-item" onClick={() => { onPaymentChange(c, s.name); setDropdownOpen(false); }}>
+                {s.name === "Paid" ? "✅ مدفوع كامل" : (s.name === "Free" ? "🎁 مجاناً" : "❌ غير مدفوع")}
               </div>
             ))}
           </div>
@@ -838,11 +1296,21 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
       </div>
     );
   }
+  
+  return null;
 }
 
-function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onUpdateMaterial, onUpdateStatus, onClose }) {
+function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose }) {
   const sm = STATUS_META[c.caseStatus] || {};
   const mc = MAT_COLORS[c.materialName] || "var(--mint)";
+  const remaining = (c.totalAmount || 0) - (c.paidAmount || 0);
+  
+  const getPaymentLabel = (status) => {
+    if (status === "Paid") return "مدفوع كامل";
+    if (status === "Free") return "مجاناً";
+    if (status === "Partial") return `مدفوع جزئي (${fmtMoney(c.paidAmount)} ج.م)`;
+    return "غير مدفوع";
+  };
 
   return (
     <>
@@ -850,10 +1318,15 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onUpdateMa
       <div className="drawer">
         <div className="drawer-header">
           <div>
-            <div style={{ fontSize: 16, fontWeight: 800 }}>{c.patientName}</div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+            <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>{c.patientName}</div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               <Badge label={c.caseStatus} color={sm.color} bg={sm.bg} icon={sm.icon} />
               <Badge label={c.materialName} color={mc} bg={mc + "20"} />
+              <Badge 
+                label={getPaymentLabel(c.paymentStatus)} 
+                color={c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)"))} 
+                bg={c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : (c.paymentStatus === "Partial" ? "rgba(155,142,255,.12)" : "rgba(239,68,68,.12)"))} 
+              />
             </div>
           </div>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
@@ -861,23 +1334,60 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onUpdateMa
         <div className="drawer-body">
           <div className="drawer-section">
             <div className="drawer-section-title">الحساب</div>
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0" }}>
-              <div><div style={{ fontSize: 11, color: "var(--text2)" }}>الإجمالي</div></div>
-              <div style={{ fontSize: 20, fontWeight: 900, color: "var(--gold)" }}>{fmtMoney(c.totalAmount)} ج.م</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0" }}>
+              <div>
+                <div style={{ fontSize: 11, color: "var(--text2)" }}>الإجمالي</div>
+                <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{c.units} وحدة × {c.pricePerUnit} ج.م</div>
+              </div>
+              <div style={{ fontSize: 26, fontWeight: 900, color: "var(--gold)", fontFamily: "JetBrains Mono" }}>{fmtMoney(c.totalAmount)} ج.م</div>
             </div>
+            {c.paymentStatus === "Partial" && (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderTop: "1px solid var(--border)" }}>
+                <div>
+                  <div style={{ fontSize: 11, color: "var(--text2)" }}>المحصل</div>
+                  <div style={{ fontSize: 11, color: "var(--mint)" }}>{fmtMoney(c.paidAmount)} ج.م</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: "var(--text2)" }}>المتبقي</div>
+                  <div style={{ fontSize: 11, color: "var(--rose)" }}>{fmtMoney(remaining)} ج.م</div>
+                </div>
+              </div>
+            )}
           </div>
           <div className="drawer-section">
             <div className="drawer-section-title">التفاصيل</div>
-            {[["الفرع", c.branchName], ["تاريخ البداية", fmtDate(c.startDate)]].map(([k, v]) => (
+            {[
+              ["الفرع", c.branchName],
+              ["تاريخ البداية", fmtDate(c.startDate)],
+              ["تاريخ الإجراء", fmtDate(c.actionDate)],
+              ["تاريخ الإضافة", fmtDate(c.createdAt)],
+            ].map(([k, v]) => (
               <div key={k} className="detail-row">
                 <span className="detail-key">{k}</span>
                 <span className="detail-val">{v}</span>
               </div>
             ))}
+            {c.notes && (
+              <div style={{ marginTop: 10, padding: "10px 12px", background: "var(--surface2)", borderRadius: 8, fontSize: 13, color: "var(--text2)" }}>
+                📝 {c.notes}
+              </div>
+            )}
           </div>
-          <div style={{ display: "flex", gap: 8, flexDirection: "column" }}>
-            <button className="btn btn-ghost" style={{ justifyContent: "center" }} onClick={() => onEdit(c)}>✏️ تعديل</button>
-            <button className="btn btn-danger" style={{ justifyContent: "center" }} onClick={() => onDelete(c)}>🗑 حذف</button>
+          
+          <div className="drawer-section">
+            <div className="drawer-section-title">تغيير حالة الدفع</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button className={`btn ${c.paymentStatus === "Paid" ? "btn-primary" : "btn-ghost"}`} style={{ flex: 1, justifyContent: "center" }} onClick={() => onUpdatePayment(c, "Paid")}>✅ مدفوع</button>
+              <button className={`btn ${c.paymentStatus === "Unpaid" ? "btn-primary" : "btn-ghost"}`} style={{ flex: 1, justifyContent: "center" }} onClick={() => onUpdatePayment(c, "Unpaid")}>❌ غير مدفوع</button>
+              <button className={`btn ${c.paymentStatus === "Free" ? "btn-primary" : "btn-ghost"}`} style={{ flex: 1, justifyContent: "center" }} onClick={() => onUpdatePayment(c, "Free")}>🎁 مجاناً</button>
+            </div>
+          </div>
+
+          <div className="divider" />
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <button className="btn btn-ghost" style={{ justifyContent: "center" }} onClick={() => onEdit(c)}>✏️ تعديل الحالة</button>
+            <button className="btn btn-danger" style={{ justifyContent: "center" }} onClick={() => onDelete(c)}>🗑 حذف الحالة</button>
           </div>
         </div>
       </div>
@@ -885,7 +1395,132 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onUpdateMa
   );
 }
 
-// ========== MAIN APP ==========
+function SettingsScreen({ settings, onSave, onClose }) {
+  const [s, setS] = useState(JSON.parse(JSON.stringify(settings)));
+  const [loading, setLoading] = useState(false);
+  const [newBranch, setNewBranch] = useState("");
+  const [newMaterial, setNewMaterial] = useState({ name: "", price: "" });
+  const [editingMaterial, setEditingMaterial] = useState(null);
+
+  function addBranch() {
+    const b = newBranch.trim();
+    if (!b || s.branches.includes(b)) return;
+    setS(prev => ({ ...prev, branches: [...prev.branches, b] }));
+    setNewBranch("");
+  }
+
+  function delBranch(b) {
+    setS(prev => ({ ...prev, branches: prev.branches.filter(x => x !== b) }));
+  }
+
+  function addMaterial() {
+    const name = newMaterial.name.trim();
+    if (!name || s.materials.some(m => m.name === name)) return;
+    const newId = `mat_${Date.now()}`;
+    const price = newMaterial.price === "" ? null : parseFloat(newMaterial.price);
+    setS(prev => ({
+      ...prev,
+      materials: [...prev.materials, { id: newId, name, price }]
+    }));
+    setNewMaterial({ name: "", price: "" });
+  }
+
+  function updateMaterialPrice(id, price) {
+    setS(prev => ({
+      ...prev,
+      materials: prev.materials.map(m =>
+        m.id === id ? { ...m, price: price === "" ? null : parseFloat(price) } : m
+      )
+    }));
+    setEditingMaterial(null);
+  }
+
+  function deleteMaterial(id) {
+    if (s.materials.length <= 1) {
+      alert("لا يمكن حذف المادة الوحيدة");
+      return;
+    }
+    setS(prev => ({
+      ...prev,
+      materials: prev.materials.filter(m => m.id !== id)
+    }));
+  }
+
+  async function save() {
+    setLoading(true);
+    await onSave(s);
+    setLoading(false);
+    onClose();
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{ maxWidth: 680 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span className="modal-title">⚙️ الإعدادات</span>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <div className="settings-section">
+            <div className="settings-section-title">🏥 إدارة الفروع</div>
+            {s.branches.map(b => (
+              <div key={b} className="settings-list-item">
+                <span className="settings-list-item-name">{b}</span>
+                {s.branches.length > 1 && <button className="btn btn-danger btn-sm" onClick={() => delBranch(b)}>حذف</button>}
+              </div>
+            ))}
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <input className="form-input" value={newBranch} onChange={e => setNewBranch(e.target.value)} placeholder="اسم الفرع الجديد" onKeyDown={e => e.key === "Enter" && addBranch()} />
+              <button className="btn btn-primary" onClick={addBranch}>إضافة فرع</button>
+            </div>
+          </div>
+          <div className="divider" />
+          <div className="settings-section">
+            <div className="settings-section-title">💊 المواد والأسعار</div>
+            <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8 }}>⚠️ تغيير الأسعار هنا لن يؤثر على الحالات القديمة</div>
+            {s.materials.map(m => (
+              <div key={m.id} className="settings-list-item">
+                <div>
+                  <div className="settings-list-item-name" style={{ color: MAT_COLORS[m.name] || "var(--accent)" }}>{m.name}</div>
+                  <div className="settings-list-item-sub">
+                    {editingMaterial === m.id ? (
+                      <input 
+                        className="form-input" 
+                        type="number" 
+                        defaultValue={m.price ?? ""} 
+                        style={{ width: 100, padding: "4px 8px", fontSize: 12 }}
+                        onBlur={(e) => updateMaterialPrice(m.id, e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && updateMaterialPrice(m.id, e.target.value)}
+                        autoFocus
+                      />
+                    ) : (
+                      m.price !== null && m.price !== undefined ? `${m.price} ج.م / وحدة` : "سعر حر (يحدد عند الإضافة)"
+                    )}
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {m.price !== null && (
+                    <button className="btn btn-ghost btn-sm" onClick={() => setEditingMaterial(m.id)}>تعديل السعر</button>
+                  )}
+                  <button className="btn btn-danger btn-sm" onClick={() => deleteMaterial(m.id)}>حذف</button>
+                </div>
+              </div>
+            ))}
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <input className="form-input" value={newMaterial.name} onChange={e => setNewMaterial({ ...newMaterial, name: e.target.value })} placeholder="اسم المادة الجديدة" style={{ flex: 2 }} />
+              <input className="form-input" type="number" value={newMaterial.price} onChange={e => setNewMaterial({ ...newMaterial, price: e.target.value })} placeholder="السعر (اتركه فارغاً لسعر حر)" style={{ flex: 1 }} />
+              <button className="btn btn-primary" onClick={addMaterial}>➕ إضافة مادة</button>
+            </div>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-ghost" onClick={onClose}>إلغاء</button>
+          <button className="btn btn-primary" onClick={save} disabled={loading}>{loading ? "جاري الحفظ..." : "💾 حفظ الإعدادات"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -910,7 +1545,9 @@ export default function App() {
       setSession(session);
       setAuthInit(true);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSession(s);
+    });
     return () => subscription.unsubscribe();
   }, []);
 
@@ -918,12 +1555,10 @@ export default function App() {
     if (!session) return;
     (async () => {
       setLoading(true);
-      const [sett, rawCases] = await Promise.all([
-        getSettings(session.user.id),
-        fetchCases(session.user.id),
-      ]);
+      const [sett, rawCases] = await Promise.all([getSettings(session.user.id), fetchCases(session.user.id)]);
       setSettings(sett);
       setCases(rawCases.map(toLocal));
+      setActiveBranch("all");
       setLoading(false);
     })();
   }, [session]);
@@ -938,39 +1573,74 @@ export default function App() {
     [cases, activeBranch]
   );
 
-  const tabFiltered = useMemo(() => {
-    let arr = branchFiltered;
-    const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
+  const patientSearchFiltered = useMemo(() => {
+    if (!search.trim()) return branchFiltered;
+    const q = search.toLowerCase().trim();
+    return branchFiltered.filter(c => c.patientName.toLowerCase().includes(q));
+  }, [branchFiltered, search]);
 
+  const availableYears = useMemo(() => {
+    const years = [];
+    for (let y = DATE_RANGE.startYear; y <= DATE_RANGE.endYear; y++) {
+      years.push(y);
+    }
+    return years;
+  }, []);
+
+  const months = [
+    "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
+    "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
+  ];
+
+  const tabFiltered = useMemo(() => {
+    let arr = patientSearchFiltered;
+    
     if (activeTab === "current") {
+      const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
       arr = arr.filter(c => {
         const d = c.actionDate || c.startDate || c.createdAt;
         return monthKey(d) === targetMonth;
       });
     } else if (activeTab === "active") {
       arr = arr.filter(c => c.caseStatus === "In progress" || c.caseStatus === "Correction");
+    } else if (activeTab === "missed") {
+      arr = arr.filter(c => c.caseStatus === "Missed");
     } else if (activeTab === "completed") {
       arr = arr.filter(c => c.caseStatus === "Completed");
     }
-
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      arr = arr.filter(c => c.patientName.toLowerCase().includes(q));
-    }
+    
     return arr;
-  }, [branchFiltered, activeTab, selectedYear, selectedMonth, search]);
+  }, [patientSearchFiltered, activeTab, selectedYear, selectedMonth]);
 
   const stats = useMemo(() => {
-    const total = tabFiltered.reduce((s, c) => s + (c.totalAmount || 0), 0);
-    const paid = tabFiltered.filter(c => c.paymentStatus === "Paid").reduce((s, c) => s + (c.totalAmount || 0), 0);
-    return { total, paid, unpaid: total - paid, count: tabFiltered.length };
-  }, [tabFiltered]);
+    const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
+    const src = patientSearchFiltered.filter(c => {
+      const d = c.actionDate || c.startDate || c.createdAt;
+      return monthKey(d) === targetMonth;
+    });
+    const total = src.reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const paid = src.filter(c => c.paymentStatus === "Paid").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const partial = src.filter(c => c.paymentStatus === "Partial").reduce((s, c) => s + (c.paidAmount || 0), 0);
+    const free = src.filter(c => c.paymentStatus === "Free").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const unpaidTotal = src.filter(c => c.paymentStatus === "Unpaid").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const partialRemaining = src.filter(c => c.paymentStatus === "Partial").reduce((s, c) => s + ((c.totalAmount || 0) - (c.paidAmount || 0)), 0);
+    
+    return { 
+      total, 
+      paid, 
+      partial, 
+      free, 
+      unpaid: unpaidTotal + partialRemaining,
+      collected: paid + partial,
+      count: src.length 
+    };
+  }, [patientSearchFiltered, selectedYear, selectedMonth]);
 
   async function handleAddCase(form) {
     const row = await insertCase(session.user.id, form);
     if (row) {
       setCases(prev => [toLocal(row), ...prev]);
-      showToast("✅ تمت الإضافة");
+      showToast("✅ تمت إضافة الحالة");
     }
     setShowAdd(false);
   }
@@ -985,10 +1655,17 @@ export default function App() {
       units: form.units,
       case_status: form.caseStatus,
       payment_status: form.paymentStatus,
+      paid_amount: form.paidAmount || 0,
       start_date: form.startDate,
+      action_date: form.actionDate || null,
+      notes: form.notes || null,
     });
-    setCases(prev => prev.map(x => x.id === c.id ? { ...x, ...form, totalAmount: form.pricePerUnit * form.units } : x));
-    showToast("✅ تم الحفظ");
+    setCases(prev => prev.map(x => x.id === c.id ? { 
+      ...x, 
+      ...form, 
+      totalAmount: form.pricePerUnit * form.units 
+    } : x));
+    showToast("✅ تم حفظ التعديل");
     setEditCase(null);
     setDetailCase(null);
   }
@@ -1002,106 +1679,211 @@ export default function App() {
   }
 
   async function handleUpdatePayment(c, newStatus) {
-    await updateCaseDB(c.id, { payment_status: newStatus });
-    setCases(prev => prev.map(x => x.id === c.id ? { ...x, paymentStatus: newStatus } : x));
-    showToast("✅ تم التحديث");
+    if (c.paymentStatus === newStatus) return;
+    let updateData = { payment_status: newStatus };
+    if (newStatus === "Paid") {
+      updateData.paid_amount = c.totalAmount;
+    } else if (newStatus === "Free" || newStatus === "Unpaid") {
+      updateData.paid_amount = 0;
+    }
+    await updateCaseDB(c.id, updateData);
+    setCases(prev => prev.map(x => x.id === c.id ? { 
+      ...x, 
+      paymentStatus: newStatus,
+      paidAmount: updateData.paid_amount !== undefined ? updateData.paid_amount : x.paidAmount
+    } : x));
+    if (detailCase && detailCase.id === c.id) {
+      setDetailCase(prev => ({ ...prev, paymentStatus: newStatus, paidAmount: updateData.paid_amount !== undefined ? updateData.paid_amount : prev?.paidAmount }));
+    }
+    const msg = newStatus === "Paid" ? "✅ تم التحديد كمدفوع كامل" : (newStatus === "Free" ? "🎁 تم التحديد كمجاناً" : "❌ تم التحديد كغير مدفوع");
+    showToast(msg);
   }
 
-  async function handleUpdateMaterial(c, newMaterial) {
-    await updateCaseDB(c.id, { material_name: newMaterial });
-    setCases(prev => prev.map(x => x.id === c.id ? { ...x, materialName: newMaterial } : x));
-    showToast("✅ تم التحديث");
+  async function handleUpdateMaterial(c, newMaterialName) {
+    if (c.materialName === newMaterialName) return;
+    const newMaterial = settings.materials.find(m => m.name === newMaterialName);
+    const newPrice = newMaterial?.price !== undefined ? newMaterial.price : c.pricePerUnit;
+    await updateCaseDB(c.id, { material_name: newMaterialName, price_per_unit: newPrice });
+    setCases(prev => prev.map(x => x.id === c.id ? { ...x, materialName: newMaterialName, pricePerUnit: newPrice, totalAmount: newPrice * x.units } : x));
+    if (detailCase && detailCase.id === c.id) {
+      setDetailCase(prev => ({ ...prev, materialName: newMaterialName, pricePerUnit: newPrice, totalAmount: newPrice * prev.units }));
+    }
+    showToast(`✅ تم تغيير المادة إلى ${newMaterialName}`);
   }
 
-  async function handleUpdateStatus(c, newStatus) {
+  async function handleUpdateCaseStatus(c, newStatus) {
+    if (c.caseStatus === newStatus) return;
     await updateCaseDB(c.id, { case_status: newStatus });
     setCases(prev => prev.map(x => x.id === c.id ? { ...x, caseStatus: newStatus } : x));
-    showToast("✅ تم التحديث");
+    if (detailCase && detailCase.id === c.id) {
+      setDetailCase(prev => ({ ...prev, caseStatus: newStatus }));
+    }
+    showToast(`✅ تم تغيير الحالة إلى ${newStatus}`);
   }
 
   async function handleSaveSettings(s) {
     await saveSettings(session.user.id, s);
     setSettings(s);
-    showToast("✅ تم الحفظ");
+    showToast("✅ تم حفظ الإعدادات");
   }
 
   async function handleImport(e) {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      const text = await file.text();
-      const lines = text.split("\n");
-      let count = 0;
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-        count++;
-        // Parse CSV and insert
-      }
+      const count = await importCSV(file, session.user.id, activeBranch !== "all" ? activeBranch : settings.branches[0]);
+      const fresh = await fetchCases(session.user.id);
+      setCases(fresh.map(toLocal));
       showToast(`✅ تم استيراد ${count} حالة`);
-    } catch {
-      showToast("❌ خطأ");
+    } catch (err) {
+      showToast(`❌ خطأ في الاستيراد: ${err.message}`);
     }
     e.target.value = "";
   }
 
-  if (!authInit) return <div className="loading"><div className="spinner" /></div>;
+  const exportCurrentMonth = useCallback(() => {
+    const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
+    const dataToExport = patientSearchFiltered.filter(c => {
+      const d = c.actionDate || c.startDate || c.createdAt;
+      return monthKey(d) === targetMonth;
+    });
+    exportCSV(dataToExport);
+    showToast(`✅ تم تصدير ${dataToExport.length} حالة لشهر ${selectedMonth}/${selectedYear}`);
+  }, [patientSearchFiltered, selectedYear, selectedMonth, showToast]);
+
+  const exportAll = useCallback(() => {
+    exportCSV(patientSearchFiltered);
+    showToast(`✅ تم تصدير ${patientSearchFiltered.length} حالة (كل الحالات)`);
+  }, [patientSearchFiltered, showToast]);
+
+  const handleCardClick = (c, e) => {
+    if (e.target.closest('.badge') && e.target.closest('.dropdown-container')) return;
+    setDetailCase(c);
+  };
+
+  if (!authInit) return <div className="loading" style={{ minHeight: "100vh" }}><div className="spinner" /></div>;
   if (!session) return <LoginScreen onLogin={s => setSession(s)} />;
+
+  const tabs = [
+    { id: "current", label: "📅 الشهر المحدد" },
+    { id: "active", label: "⚙️ قيد العمل" },
+    { id: "missed", label: "⚠️ Missed" },
+    { id: "completed", label: "✅ المنتهية" },
+  ];
 
   return (
     <>
       <style>{CSS}</style>
       <div className="header">
         <div className="header-top">
-          <div className="header-title">🦷 Dental Tracker</div>
+          <div className="header-title"><span className="dot" />🦷 Dental Tracker</div>
           <div className="header-actions">
             <input type="file" ref={importRef} accept=".csv" style={{ display: "none" }} onChange={handleImport} />
-            <button className="btn btn-ghost btn-sm" onClick={() => exportCSV(tabFiltered)}>📤 تصدير</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => importRef.current?.click()}>📥 استيراد</button>
+            <button className="btn btn-ghost btn-sm" onClick={exportCurrentMonth}>📤 الشهر</button>
+            <button className="btn btn-primary btn-sm" onClick={exportAll}>📤 الكل</button>
+            <button className="btn btn-ghost btn-icon" onClick={() => setShowSettings(true)}>⚙️</button>
             <button className="btn btn-ghost btn-sm" onClick={() => supabase.auth.signOut()}>خروج</button>
           </div>
+        </div>
+        <div className="branch-bar">
+          <span className="branch-label">الفرع:</span>
+          <select className="branch-select" value={activeBranch} onChange={e => setActiveBranch(e.target.value)}>
+            <option value="all">🏥 كل الفروع</option>
+            {settings.branches.map(b => <option key={b} value={b}>{b}</option>)}
+          </select>
+        </div>
+        
+        <div className="month-selector-wrapper">
+          <span className="branch-label">السنة:</span>
+          <select className="year-select" value={selectedYear} onChange={e => setSelectedYear(parseInt(e.target.value))}>
+            {availableYears.map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+          
+          <span className="branch-label" style={{ marginRight: 8 }}>الشهر:</span>
+          <select className="month-select" value={selectedMonth} onChange={e => setSelectedMonth(parseInt(e.target.value))}>
+            {months.map((month, index) => (
+              <option key={index} value={index + 1}>{month}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="tabs">
+          {tabs.map(t => (
+            <button key={t.id} className={`tab${activeTab === t.id ? " active" : ""}`} onClick={() => setActiveTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
         </div>
       </div>
       <div className="main">
         <div className="stats-grid">
           {[
-            { label: "إجمالي", value: `${fmtMoney(stats.total)} ج.م`, color: "var(--gold)" },
-            { label: "محصّل", value: `${fmtMoney(stats.paid)} ج.م`, color: "var(--mint)" },
-            { label: "غير محصّل", value: `${fmtMoney(stats.unpaid)} ج.م`, color: "var(--rose)" },
-            { label: "الحالات", value: stats.count, color: "var(--lavender)" },
-          ].map((s, i) => (
-            <div key={i} className="stat-card">
-              <div className="stat-label">{s.label}</div>
-              <div className="stat-value" style={{ color: s.color }}>{s.value}</div>
+            { label: "إجمالي الشهر", value: `${fmtMoney(stats.total)} ج.م`, color: "var(--gold)", icon: "💰" },
+            { label: "المحصل", value: `${fmtMoney(stats.collected)} ج.م`, color: "var(--mint)", icon: "✅" },
+            { label: "المتبقي", value: `${fmtMoney(stats.unpaid)} ج.م`, color: "var(--rose)", icon: "⏳" },
+            { label: "مجاناً", value: `${fmtMoney(stats.free)} ج.م`, color: "var(--amber)", icon: "🎁" },
+            { label: "عدد الحالات", value: tabFiltered.length, color: "var(--lavender)", icon: "📋" },
+          ].map(({ label, value, color, icon }, i) => (
+            <div className="stat-card fade-up" key={i} style={{ animationDelay: `${i * 0.06}s`, "--card-color": color }}>
+              <div className="stat-label">{icon} {label}</div>
+              <div className="stat-value" style={{ color }}>{value}</div>
             </div>
           ))}
         </div>
         <div className="toolbar">
           <div className="search-wrap">
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 بحث..." />
+            <input 
+              value={search} 
+              onChange={e => setSearch(e.target.value)} 
+              placeholder="🔍 بحث باسم المريض (جميع الحالات)..." 
+            />
           </div>
         </div>
         {loading ? <Spinner /> : tabFiltered.length === 0 ? (
           <div className="empty">
             <div className="empty-icon">📋</div>
-            <div className="empty-msg">لا توجد حالات</div>
+            <div className="empty-msg">
+              {search ? `لا توجد حالات للمريض "${search}"` : "لا توجد حالات في هذا الفلتر"}
+            </div>
           </div>
         ) : (
           <div className="cases-grid">
             {tabFiltered.map((c, i) => {
               const sm = STATUS_META[c.caseStatus] || {};
+              const mc = MAT_COLORS[c.materialName] || "var(--mint)";
               return (
-                <div key={c.id} className="case-card" style={{ "--status-color": sm.color }}>
-                  <div onClick={() => setDetailCase(c)}>
-                    <div className="case-name">{c.patientName}</div>
-                    <div className="case-date">{fmtDate(c.startDate)}</div>
-                    <div className="case-badges">
-                      <BadgeDropdown c={c} type="status" settings={settings} onStatusChange={handleUpdateStatus} />
-                      <BadgeDropdown c={c} type="material" settings={settings} onMaterialChange={handleUpdateMaterial} />
-                      <BadgeDropdown c={c} type="payment" settings={settings} onPaymentChange={handleUpdatePayment} />
+                <div key={c.id} className="case-card fade-up" style={{ "--status-color": sm.color, animationDelay: `${Math.min(i, 12) * 0.04}s` }}>
+                  <div className="case-clickable-area" onClick={(e) => handleCardClick(c, e)}>
+                    <div className="case-card-header">
+                      <div><div className="case-name">{c.patientName}</div><div className="case-date">{fmtDate(c.startDate)}</div></div>
+                      <span className="case-branch">{c.branchName}</span>
                     </div>
-                    <div style={{ marginTop: 8 }}>
-                      <div className="case-amount" style={{ color: "var(--gold)" }}>{fmtMoney(c.totalAmount)} ج.م</div>
-                      <div className="case-units">{c.units} وحدة × {c.pricePerUnit}</div>
+                    <div className="case-badges">
+                      <BadgeDropdown 
+                        c={c} 
+                        type="status" 
+                        settings={settings} 
+                        onStatusChange={handleUpdateCaseStatus}
+                      />
+                      <BadgeDropdown 
+                        c={c} 
+                        type="material" 
+                        settings={settings} 
+                        onMaterialChange={handleUpdateMaterial}
+                      />
+                      <BadgeDropdown 
+                        c={c} 
+                        type="payment" 
+                        settings={settings} 
+                        onPaymentChange={handleUpdatePayment}
+                      />
+                    </div>
+                    <div className="case-footer">
+                      <div><div className="case-amount" style={{ color: "var(--gold)" }}>{fmtMoney(c.totalAmount)} ج.م</div><div className="case-units">{c.units} وحدة × {c.pricePerUnit}</div></div>
+                      {c.paymentStatus === "Partial" && (<div style={{ fontSize: 10, color: "var(--mint)" }}>محصل: {fmtMoney(c.paidAmount)}</div>)}
                     </div>
                   </div>
                 </div>
@@ -1110,10 +1892,11 @@ export default function App() {
           </div>
         )}
       </div>
-      <button className="btn btn-fab" style={{ position: "fixed", bottom: "20px", right: "20px", width: "56px", height: "56px", borderRadius: "50%", background: "var(--accent)", color: "#fff", fontSize: "24px", display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }} onClick={() => setShowAdd(true)}>＋</button>
-      {showAdd && <CaseModal settings={settings} defaultBranch={settings.branches[0]} onSave={handleAddCase} onClose={() => setShowAdd(false)} />}
+      <button className="btn-fab" onClick={() => setShowAdd(true)}>＋</button>
+      {showAdd && <CaseModal settings={settings} defaultBranch={activeBranch !== "all" ? activeBranch : settings.branches[0]} onSave={handleAddCase} onClose={() => setShowAdd(false)} />}
       {editCase && <CaseModal existing={editCase} settings={settings} defaultBranch={editCase.branchName} onSave={handleEditCase} onClose={() => setEditCase(null)} />}
-      {detailCase && <CaseDrawer c={detailCase} settings={settings} onEdit={c => { setEditCase(c); setDetailCase(null); }} onDelete={handleDelete} onUpdatePayment={handleUpdatePayment} onUpdateMaterial={handleUpdateMaterial} onUpdateStatus={handleUpdateStatus} onClose={() => setDetailCase(null)} />}
+      {detailCase && <CaseDrawer c={detailCase} settings={settings} onEdit={c => { setEditCase(c); setDetailCase(null); }} onDelete={handleDelete} onUpdatePayment={handleUpdatePayment} onClose={() => setDetailCase(null)} />}
+      {showSettings && <SettingsScreen settings={settings} onSave={handleSaveSettings} onClose={() => setShowSettings(false)} />}
       <Toast msg={toast} />
     </>
   );
