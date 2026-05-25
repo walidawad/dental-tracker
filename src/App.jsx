@@ -1,11 +1,3 @@
-================================================================================
-DENTAL TRACKER - COMPLETE WORKING CODE
-================================================================================
-
-COPY EVERYTHING BELOW AND PASTE INTO YOUR PROJECT FILE
-
-================================================================================
-
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -1126,7 +1118,3 @@ export default function App() {
     </>
   );
 }
-
-================================================================================
-END OF CODE - COPY EVERYTHING ABOVE
-================================================================================
