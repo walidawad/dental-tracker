@@ -113,8 +113,8 @@ const CSS = `
   --text: #E8ECF8;
   --text2: #8A94B8;
   --text3: #4A5280;
-  --r: 12px;
-  --r2: 8px;
+  --r: 10px;
+  --r2: 6px;
 }
 
 html { direction: rtl; -webkit-text-size-adjust: 100%; }
@@ -126,13 +126,14 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   width: 100%;
+  max-width: 100vw;
 }
 
-::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
-@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; } }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; } }
 @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 
 .login-shell {
@@ -141,28 +142,28 @@ body {
   align-items: center;
   justify-content: center;
   background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(61,126,255,.18) 0%, transparent 70%), var(--bg);
-  padding: 24px;
+  padding: 20px;
 }
 .login-card {
   background: var(--surface);
   border: 1px solid var(--border2);
-  border-radius: 20px;
-  padding: 40px 36px;
+  border-radius: 18px;
+  padding: 32px 28px;
   width: 100%;
-  max-width: 420px;
+  max-width: 400px;
 }
-.login-logo { text-align: center; margin-bottom: 32px; }
+.login-logo { text-align: center; margin-bottom: 28px; }
 .login-logo-icon {
-  width: 64px; height: 64px; border-radius: 20px;
+  width: 56px; height: 56px; border-radius: 18px;
   background: linear-gradient(135deg, var(--accent), #6C63FF);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
-  margin-bottom: 14px;
+  font-size: 26px;
+  margin-bottom: 12px;
 }
-.login-logo h1 { font-size: 20px; font-weight: 800; }
-.login-logo p { font-size: 13px; color: var(--text2); margin-top: 4px; }
+.login-logo h1 { font-size: 18px; font-weight: 800; }
+.login-logo p { font-size: 12px; color: var(--text2); margin-top: 4px; }
 
 .header {
   background: var(--surface);
@@ -170,58 +171,58 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: 0 14px;
+  padding: 0 12px;
 }
 .header-top {
-  height: 58px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 .header-title {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   white-space: nowrap;
 }
-.header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.header-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .branch-bar, .month-selector-wrapper {
-  padding: 8px 14px;
+  padding: 6px 12px;
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   align-items: center;
   border-bottom: 1px solid var(--border);
 }
-.branch-label { font-size: 11px; color: var(--text3); font-weight: 700; }
+.branch-label { font-size: 10px; color: var(--text3); font-weight: 700; }
 .branch-select, .year-select, .month-select {
   background: var(--surface2);
   border: 1px solid var(--border2);
   border-radius: var(--r2);
   color: var(--text);
   font-family: 'Tajawal', sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  padding: 6px 12px;
+  padding: 5px 10px;
   cursor: pointer;
 }
 
 .tabs {
   display: flex;
   gap: 4px;
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
 }
 .tab {
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 16px;
+  font-size: 11px;
   font-weight: 700;
   border: 1px solid var(--border);
   color: var(--text2);
@@ -231,55 +232,56 @@ body {
 }
 .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-.main { padding: 14px; max-width: 1400px; margin: 0 auto; }
+.main { padding: 10px; max-width: 600px; margin: 0 auto; }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
 }
 .stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  padding: 14px;
+  padding: 8px 6px;
+  text-align: center;
 }
-.stat-label { font-size: 11px; color: var(--text2); font-weight: 700; margin-bottom: 6px; }
-.stat-value { font-size: 18px; font-weight: 900; word-break: break-word; }
+.stat-label { font-size: 9px; color: var(--text2); font-weight: 700; margin-bottom: 4px; }
+.stat-value { font-size: 14px; font-weight: 900; word-break: break-word; }
 
 .toolbar {
   display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
 }
 .search-wrap {
   flex: 1;
-  min-width: 180px;
+  min-width: 160px;
 }
 .search-wrap input {
   width: 100%;
-  padding: 8px 12px;
+  padding: 7px 10px;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--r2);
   color: var(--text);
   font-family: 'Tajawal', sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   outline: none;
 }
 
 .cases-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 8px;
 }
 .case-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  padding: 12px;
+  padding: 8px 10px;
   position: relative;
 }
 .case-card::after {
@@ -292,32 +294,39 @@ body {
   background: var(--status-color, var(--border));
   border-radius: 0 var(--r) var(--r) 0;
 }
-.case-name { font-size: 14px; font-weight: 700; word-break: break-word; }
-.case-date { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.case-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.case-name { font-size: 13px; font-weight: 700; word-break: break-word; }
+.case-date { font-size: 9px; color: var(--text3); }
 .case-badges {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
-  margin: 8px 0;
+  margin: 6px 0;
 }
 .case-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
+  margin-top: 6px;
 }
-.case-amount { font-size: 16px; font-weight: 800; }
-.case-units { font-size: 10px; color: var(--text3); }
-.case-branch { font-size: 10px; color: var(--text2); background: var(--surface2); padding: 2px 8px; border-radius: 20px; }
+.case-amount { font-size: 14px; font-weight: 800; }
+.case-units { font-size: 9px; color: var(--text3); }
+.case-branch { font-size: 9px; color: var(--text2); background: var(--surface2); padding: 2px 6px; border-radius: 16px; }
 
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 11px;
+  gap: 3px;
+  padding: 3px 8px;
+  border-radius: 16px;
+  font-size: 10px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -333,16 +342,16 @@ body {
   border: 1px solid var(--border2);
   border-radius: var(--r2);
   z-index: 9999;
-  min-width: 160px;
-  max-width: 220px;
-  max-height: 250px;
+  min-width: 140px;
+  max-width: 200px;
+  max-height: 220px;
   overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  box-shadow: 0 4px 12px rgba(0,0,0,.5);
 }
 
 .dropdown-item {
-  padding: 12px 16px;
-  font-size: 13px;
+  padding: 8px 12px;
+  font-size: 11px;
   cursor: pointer;
   text-align: center;
   border-bottom: 1px solid var(--border);
@@ -358,11 +367,11 @@ body {
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 4px;
+  padding: 5px 10px;
   border-radius: var(--r2);
   font-family: 'Tajawal', sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   border: none;
   cursor: pointer;
@@ -371,25 +380,25 @@ body {
 .btn-primary { background: var(--accent); color: #fff; }
 .btn-ghost { background: var(--surface2); border: 1px solid var(--border2); color: var(--text2); }
 .btn-danger { background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3); color: var(--rose); }
-.btn-sm { padding: 4px 10px; font-size: 11px; }
-.btn-icon { padding: 6px; }
+.btn-sm { padding: 3px 8px; font-size: 10px; }
+.btn-icon { padding: 5px; }
 .btn-fab {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 48px;
-  height: 48px;
+  bottom: 16px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), #6C63FF);
   color: #fff;
-  font-size: 22px;
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   cursor: pointer;
   z-index: 90;
-  box-shadow: 0 4px 12px rgba(61,126,255,.4);
+  box-shadow: 0 3px 10px rgba(61,126,255,.4);
 }
 
 .modal-overlay {
@@ -405,50 +414,49 @@ body {
 .modal {
   background: var(--surface);
   border: 1px solid var(--border2);
-  border-radius: 18px;
+  border-radius: 16px;
   width: 100%;
-  max-width: 560px;
-  max-height: 90vh;
+  max-width: 500px;
+  max-height: 85vh;
   overflow-y: auto;
 }
 .modal-header {
-  padding: 16px 20px;
+  padding: 12px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border);
 }
-.modal-title { font-size: 16px; font-weight: 800; }
-.modal-body { padding: 16px 20px; }
-.modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+.modal-title { font-size: 15px; font-weight: 800; }
+.modal-body { padding: 14px 16px; }
+.modal-footer { padding: 10px 16px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
 
-.form-group { margin-bottom: 14px; }
-.form-label { display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 4px; }
+.form-group { margin-bottom: 12px; }
+.form-label { display: block; font-size: 11px; font-weight: 700; color: var(--text2); margin-bottom: 3px; }
 .form-input {
   width: 100%;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--r2);
-  padding: 8px 12px;
+  padding: 7px 10px;
   color: var(--text);
   font-family: 'Tajawal', sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   outline: none;
 }
-.form-row { display: grid; grid-template-columns: 1fr; gap: 12px; }
-.form-textarea { min-height: 70px; resize: vertical; }
+.form-row { display: grid; grid-template-columns: 1fr; gap: 10px; }
 
 .total-preview {
   background: linear-gradient(135deg, rgba(61,126,255,.1), rgba(108,99,255,.08));
   border: 1px solid rgba(61,126,255,.25);
   border-radius: var(--r);
-  padding: 12px;
+  padding: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
-.total-preview-value { font-size: 22px; font-weight: 900; color: var(--gold); }
+.total-preview-value { font-size: 18px; font-weight: 900; color: var(--gold); }
 
 .drawer {
   position: fixed;
@@ -463,76 +471,73 @@ body {
 }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: none; } }
 .drawer-header {
-  padding: 16px;
+  padding: 12px;
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
 }
-.drawer-body { padding: 16px; }
-.drawer-section { margin-bottom: 20px; }
-.drawer-section-title { font-size: 11px; font-weight: 700; color: var(--text3); margin-bottom: 8px; }
+.drawer-body { padding: 12px; }
+.drawer-section { margin-bottom: 16px; }
+.drawer-section-title { font-size: 10px; font-weight: 700; color: var(--text3); margin-bottom: 6px; }
 .detail-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: 6px 0;
   border-bottom: 1px solid var(--border);
 }
-.detail-key { font-size: 12px; color: var(--text2); }
-.detail-val { font-size: 12px; font-weight: 600; color: var(--text); }
+.detail-key { font-size: 11px; color: var(--text2); }
+.detail-val { font-size: 11px; font-weight: 600; color: var(--text); }
 
-.settings-section { margin-bottom: 24px; }
+.settings-section { margin-bottom: 20px; }
 .settings-section-title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 .settings-list-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
+  padding: 6px 10px;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--r2);
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
-.settings-list-item-name { font-size: 13px; font-weight: 600; }
+.settings-list-item-name { font-size: 12px; font-weight: 600; }
 
 .toast {
   position: fixed;
-  bottom: 80px;
+  bottom: 70px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--surface2);
   border: 1px solid var(--border2);
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text);
   z-index: 2000;
-  max-width: 90%;
+  max-width: 85%;
+  text-align: center;
+  cursor: pointer;
 }
 
-.empty { text-align: center; padding: 40px 20px; color: var(--text3); }
-.empty-icon { font-size: 40px; margin-bottom: 12px; opacity: .3; }
-.loading { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 40px; }
-.spinner { width: 18px; height: 18px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+.empty { text-align: center; padding: 30px 16px; color: var(--text3); }
+.empty-icon { font-size: 32px; margin-bottom: 8px; opacity: .3; }
+.loading { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 30px; }
+.spinner { width: 16px; height: 16px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-@media (min-width: 640px) {
-  .stats-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
-  .cases-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
-  .drawer { width: min(400px, 100vw); }
-  .form-row { grid-template-columns: 1fr 1fr; }
-}
+.divider { height: 1px; background: var(--border); margin: 12px 0; }
 
-@media (max-width: 480px) {
-  .btn-sm { padding: 4px 8px; font-size: 10px; }
-  .badge { padding: 3px 8px; font-size: 10px; }
-  .dropdown-item { padding: 10px 14px; font-size: 12px; }
+@media (min-width: 640px) {
+  .stats-grid { grid-template-columns: repeat(4, 1fr); }
+  .drawer { width: min(360px, 100vw); }
+  .form-row { grid-template-columns: 1fr 1fr; }
 }
 `;
 
@@ -702,8 +707,8 @@ function Badge({ label, color, bg, icon }) {
   );
 }
 
-function Toast({ msg }) {
-  return msg ? <div className="toast">{msg}</div> : null;
+function Toast({ msg, onClick }) {
+  return msg ? <div className="toast" onClick={onClick}>{msg}</div> : null;
 }
 
 function Spinner() {
@@ -755,13 +760,13 @@ function LoginScreen({ onLogin }) {
             <label className="form-label">كلمة المرور</label>
             <input className="form-input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
           </div>
-          {err && <div style={{ fontSize: 13, color: err.includes("✉️") ? "var(--mint)" : "var(--rose)", marginBottom: 12, padding: "8px 12px", background: "rgba(239,68,68,.08)", borderRadius: 8 }}>{err}</div>}
-          <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: "100%", justifyContent: "center", padding: "10px" }}>
+          {err && <div style={{ fontSize: 12, color: err.includes("✉️") ? "var(--mint)" : "var(--rose)", marginBottom: 10, padding: "6px 10px", background: "rgba(239,68,68,.08)", borderRadius: 6 }}>{err}</div>}
+          <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: "100%", justifyContent: "center", padding: "8px" }}>
             {loading ? "جاري..." : mode === "login" ? "تسجيل الدخول" : "إنشاء حساب"}
           </button>
         </form>
-        <div style={{ textAlign: "center", marginTop: 16 }}>
-          <button onClick={() => setMode(m => m === "login" ? "signup" : "login")} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontFamily: "Tajawal", fontSize: 13 }}>
+        <div style={{ textAlign: "center", marginTop: 14 }}>
+          <button onClick={() => setMode(m => m === "login" ? "signup" : "login")} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontFamily: "Tajawal", fontSize: 12 }}>
             {mode === "login" ? "مش عندك حساب؟ سجّل دلوقتي" : "عندك حساب؟ ادخل"}
           </button>
         </div>
@@ -879,7 +884,7 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
             <div className="form-group">
               <label className="form-label">المبلغ المحصل</label>
               <input className="form-input" type="number" value={form.paidAmount} onChange={e => setForm(f => ({ ...f, paidAmount: parseFloat(e.target.value) || 0 }))} placeholder="المبلغ المدفوع" />
-              <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 4 }}>المتبقي: {remaining.toLocaleString("ar-EG")} ج.م</div>
+              <div style={{ fontSize: 10, color: "var(--text3)", marginTop: 3 }}>المتبقي: {remaining.toLocaleString("ar-EG")} ج.م</div>
             </div>
           )}
           <div className="form-row">
@@ -922,7 +927,7 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
     const rect = e.currentTarget.getBoundingClientRect();
     const windowHeight = window.innerHeight;
     const spaceBelow = windowHeight - rect.bottom;
-    const dropdownHeight = 250;
+    const dropdownHeight = 220;
     
     let top = rect.bottom + 5;
     
@@ -971,7 +976,15 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
             style={{ position: 'fixed', top: dropdownPosition.top, left: dropdownPosition.left, zIndex: 9999 }}
           >
             {settings.caseStatuses.map(s => (
-              <div key={s.id} className="dropdown-item" onClick={() => { onStatusChange(c, s.name); setDropdownOpen(false); }}>
+              <div 
+                key={s.id} 
+                className="dropdown-item" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStatusChange(c, s.name);
+                  setDropdownOpen(false);
+                }}
+              >
                 {STATUS_META[s.name]?.icon} {s.name}
               </div>
             ))}
@@ -1000,7 +1013,15 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
             style={{ position: 'fixed', top: dropdownPosition.top, left: dropdownPosition.left, zIndex: 9999 }}
           >
             {settings.materials.map(m => (
-              <div key={m.id} className="dropdown-item" onClick={() => { onMaterialChange(c, m.name); setDropdownOpen(false); }}>
+              <div 
+                key={m.id} 
+                className="dropdown-item" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMaterialChange(c, m.name);
+                  setDropdownOpen(false);
+                }}
+              >
                 {m.name} {m.price ? `(${m.price})` : ''}
               </div>
             ))}
@@ -1037,7 +1058,15 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
             style={{ position: 'fixed', top: dropdownPosition.top, left: dropdownPosition.left, zIndex: 9999 }}
           >
             {settings.paymentStatuses.filter(s => s.name !== "Partial").map(s => (
-              <div key={s.id} className="dropdown-item" onClick={() => { onPaymentChange(c, s.name); setDropdownOpen(false); }}>
+              <div 
+                key={s.id} 
+                className="dropdown-item" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPaymentChange(c, s.name);
+                  setDropdownOpen(false);
+                }}
+              >
                 {s.name === "Paid" ? "✅ مدفوع كامل" : (s.name === "Free" ? "🎁 مجاناً" : "❌ غير مدفوع")}
               </div>
             ))}
@@ -1068,8 +1097,8 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose, s
       <div className="drawer">
         <div className="drawer-header">
           <div>
-            <div style={{ fontSize: 16, fontWeight: 800 }}>{c.patientName}</div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+            <div style={{ fontSize: 15, fontWeight: 800 }}>{c.patientName}</div>
+            <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 6 }}>
               <Badge label={c.caseStatus} color={sm.color} bg={sm.bg} icon={sm.icon} />
               <Badge label={c.materialName} color={mc} bg={mc + "20"} />
               <Badge label={getPaymentLabel(c.paymentStatus)} color={c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : "var(--rose)")} />
@@ -1118,7 +1147,7 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose, s
               </div>
             )}
           </div>
-          <div style={{ display: "flex", gap: 8, flexDirection: "column" }}>
+          <div style={{ display: "flex", gap: 6, flexDirection: "column" }}>
             <button className="btn btn-ghost" onClick={() => onEdit(c)}>✏️ تعديل الحالة</button>
             <button className="btn btn-danger" onClick={() => onDelete(c)}>🗑 حذف الحالة</button>
           </div>
@@ -1206,7 +1235,7 @@ function SettingsScreen({ settings, onSave, onClose, setToast }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 600 }} onClick={e => e.stopPropagation()}>
+      <div className="modal" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <span className="modal-title">⚙️ الإعدادات</span>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
@@ -1228,7 +1257,7 @@ function SettingsScreen({ settings, onSave, onClose, setToast }) {
             </button>
           </div>
           
-          <div className="divider" style={{ height: 1, background: "var(--border)", margin: "16px 0" }} />
+          <div className="divider" />
           
           <div className="settings-section">
             <div className="settings-section-title">🏥 إدارة الفروع</div>
@@ -1238,17 +1267,17 @@ function SettingsScreen({ settings, onSave, onClose, setToast }) {
                 {s.branches.length > 1 && <button className="btn btn-danger btn-sm" onClick={() => delBranch(b)}>حذف</button>}
               </div>
             ))}
-            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+            <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
               <input className="form-input" value={newBranch} onChange={e => setNewBranch(e.target.value)} placeholder="اسم الفرع الجديد" onKeyDown={e => e.key === "Enter" && addBranch()} />
-              <button className="btn btn-primary" onClick={addBranch}>إضافة فرع</button>
+              <button className="btn btn-primary btn-sm" onClick={addBranch}>إضافة</button>
             </div>
           </div>
           
-          <div className="divider" style={{ height: 1, background: "var(--border)", margin: "16px 0" }} />
+          <div className="divider" />
           
           <div className="settings-section">
             <div className="settings-section-title">💊 المواد والأسعار</div>
-            <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8 }}>⚠️ تغيير الأسعار هنا لن يؤثر على الحالات القديمة</div>
+            <div style={{ fontSize: 10, color: "var(--text3)", marginBottom: 6 }}>⚠️ تغيير الأسعار هنا لن يؤثر على الحالات القديمة</div>
             {s.materials.map(m => (
               <div key={m.id} className="settings-list-item">
                 <div>
@@ -1259,7 +1288,7 @@ function SettingsScreen({ settings, onSave, onClose, setToast }) {
                         className="form-input" 
                         type="number" 
                         defaultValue={m.price ?? ""} 
-                        style={{ width: 100, padding: "4px 8px", fontSize: 12 }}
+                        style={{ width: 90, padding: "3px 6px", fontSize: 11 }}
                         onBlur={(e) => updateMaterialPrice(m.id, e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && updateMaterialPrice(m.id, e.target.value)}
                         autoFocus
@@ -1269,26 +1298,137 @@ function SettingsScreen({ settings, onSave, onClose, setToast }) {
                     )}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 6 }}>
+                <div style={{ display: "flex", gap: 4 }}>
                   {m.price !== null && (
-                    <button className="btn btn-ghost btn-sm" onClick={() => setEditingMaterial(m.id)}>تعديل السعر</button>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setEditingMaterial(m.id)}>تعديل</button>
                   )}
                   <button className="btn btn-danger btn-sm" onClick={() => deleteMaterial(m.id)}>حذف</button>
                 </div>
               </div>
             ))}
-            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-              <input className="form-input" value={newMaterial.name} onChange={e => setNewMaterial({ ...newMaterial, name: e.target.value })} placeholder="اسم المادة الجديدة" style={{ flex: 2 }} />
-              <input className="form-input" type="number" value={newMaterial.price} onChange={e => setNewMaterial({ ...newMaterial, price: e.target.value })} placeholder="السعر (اتركه فارغاً لسعر حر)" style={{ flex: 1 }} />
-              <button className="btn btn-primary" onClick={addMaterial}>➕ إضافة مادة</button>
+            <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+              <input className="form-input" value={newMaterial.name} onChange={e => setNewMaterial({ ...newMaterial, name: e.target.value })} placeholder="اسم المادة" style={{ flex: 2 }} />
+              <input className="form-input" type="number" value={newMaterial.price} onChange={e => setNewMaterial({ ...newMaterial, price: e.target.value })} placeholder="السعر" style={{ flex: 1 }} />
+              <button className="btn btn-primary btn-sm" onClick={addMaterial}>➕</button>
             </div>
           </div>
         </div>
         <div className="modal-footer">
           <button className="btn btn-ghost" onClick={onClose}>إلغاء</button>
-          <button className="btn btn-primary" onClick={save} disabled={loading}>{loading ? "جاري الحفظ..." : "💾 حفظ الإعدادات"}</button>
+          <button className="btn btn-primary" onClick={save} disabled={loading}>{loading ? "جاري..." : "💾 حفظ"}</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// نافذة الإحصائيات التفصيلية
+function StatsModal({ cases, statsDetail, onClose }) {
+  const totalCases = cases.length;
+  const totalMoney = cases.reduce((sum, c) => sum + (c.totalAmount || 0), 0);
+  const totalCollected = cases.reduce((sum, c) => sum + (c.paidAmount || 0), 0);
+  const totalUnpaid = totalMoney - totalCollected;
+  const totalFree = cases.filter(c => c.paymentStatus === "Free").reduce((sum, c) => sum + (c.totalAmount || 0), 0);
+
+  const completedCases = cases.filter(c => c.caseStatus === "Completed").length;
+  const inProgressCases = cases.filter(c => c.caseStatus === "In progress").length;
+  const correctionCases = cases.filter(c => c.caseStatus === "Correction").length;
+  const missedCases = cases.filter(c => c.caseStatus === "Missed").length;
+  const tempCementCases = cases.filter(c => c.caseStatus === "Temp cement").length;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{ maxWidth: 400 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span className="modal-title">📊 إحصائيات البرنامج</span>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <div style={{ marginBottom: 12 }}>
+            <div className="drawer-section-title">📋 إجماليات البرنامج</div>
+            <div className="detail-row"><span className="detail-key">إجمالي الحالات</span><span className="detail-val">{totalCases}</span></div>
+            <div className="detail-row"><span className="detail-key">إجمالي المبالغ</span><span className="detail-val">{fmtMoney(totalMoney)} ج.م</span></div>
+            <div className="detail-row"><span className="detail-key">إجمالي المحصل</span><span className="detail-val">{fmtMoney(totalCollected)} ج.م</span></div>
+            <div className="detail-row"><span className="detail-key">المتبقي</span><span className="detail-val">{fmtMoney(totalUnpaid)} ج.م</span></div>
+            <div className="detail-row"><span className="detail-key">مجاناً</span><span className="detail-val">{fmtMoney(totalFree)} ج.م</span></div>
+          </div>
+          <div className="divider" />
+          <div>
+            <div className="drawer-section-title">📌 حسب حالة الكيس</div>
+            <div className="detail-row"><span className="detail-key">✅ المنتهية (Completed)</span><span className="detail-val">{completedCases}</span></div>
+            <div className="detail-row"><span className="detail-key">⚙️ قيد العمل (In progress)</span><span className="detail-val">{inProgressCases}</span></div>
+            <div className="detail-row"><span className="detail-key">🔧 تصحيح (Correction)</span><span className="detail-val">{correctionCases}</span></div>
+            <div className="detail-row"><span className="detail-key">⚠️ Missed</span><span className="detail-val">{missedCases}</span></div>
+            <div className="detail-row"><span className="detail-key">🔩 Temp cement</span><span className="detail-val">{tempCementCases}</span></div>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-primary" onClick={onClose}>إغلاق</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// نافذة تصدير النطاق الزمني
+function RangeExportModal({ onClose, onExport }) {
+  const [startDate, setStartDate] = useState(todayISO());
+  const [endDate, setEndDate] = useState(todayISO());
+
+  const handleExport = () => {
+    onExport(startDate, endDate);
+    onClose();
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{ maxWidth: 380 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span className="modal-title">📆 تصدير نطاق زمني</span>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <div className="form-group">
+            <label className="form-label">من تاريخ</label>
+            <input className="form-input" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">إلى تاريخ</label>
+            <input className="form-input" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-ghost" onClick={onClose}>إلغاء</button>
+          <button className="btn btn-primary" onClick={handleExport}>تصدير</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// قائمة التصدير المنسدلة
+function ExportDropdown({ onExportAll, onExportCurrent, onExportRange, onClose }) {
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [onClose]);
+
+  return (
+    <div ref={dropdownRef} className="dropdown-menu" style={{ position: 'fixed', top: 50, left: 'auto', right: 60, zIndex: 9999 }}>
+      <div className="dropdown-item" onClick={() => { onExportAll(); onClose(); }}>📤 تصدير الكل</div>
+      <div className="dropdown-item" onClick={() => { onExportCurrent(); onClose(); }}>📅 تصدير الشهر الحالي</div>
+      <div className="dropdown-item" onClick={() => { onExportRange(); onClose(); }}>📆 تصدير نطاق زمني...</div>
     </div>
   );
 }
@@ -1309,8 +1449,12 @@ export default function App() {
   const [editCase, setEditCase] = useState(null);
   const [detailCase, setDetailCase] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const [showRangeExport, setShowRangeExport] = useState(false);
   const [toast, setToast] = useState("");
   const importRef = useRef();
+  let toastTimeout = useRef(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -1331,6 +1475,20 @@ export default function App() {
       setLoading(false);
     })();
   }, [session]);
+
+  const showToastMessage = useCallback((msg) => {
+    if (toastTimeout.current) clearTimeout(toastTimeout.current);
+    setToast(msg);
+    toastTimeout.current = setTimeout(() => setToast(""), 1500);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (toast) setToast("");
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [toast]);
 
   // إحصائيات البرنامج ككل (بدون فلاتر)
   const totalStats = useMemo(() => {
@@ -1391,20 +1549,24 @@ export default function App() {
     return arr;
   }, [branchFiltered, activeTab, selectedYear, selectedMonth]);
 
-  // إحصائيات الفلتر الحالي
+  // إحصائيات الفلتر الحالي (للواجهة)
   const stats = useMemo(() => {
     const total = tabFiltered.reduce((s, c) => s + (c.totalAmount || 0), 0);
     const collected = tabFiltered.reduce((s, c) => s + (c.paidAmount || 0), 0);
-    const paid = tabFiltered.filter(c => c.paymentStatus === "Paid").reduce((s, c) => s + (c.totalAmount || 0), 0);
     const free = tabFiltered.filter(c => c.paymentStatus === "Free").reduce((s, c) => s + (c.totalAmount || 0), 0);
-    return { total, collected, unpaid: total - collected, paid, free, count: tabFiltered.length };
+    const completed = tabFiltered.filter(c => c.caseStatus === "Completed").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const inProgress = tabFiltered.filter(c => c.caseStatus === "In progress").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const correction = tabFiltered.filter(c => c.caseStatus === "Correction").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const missed = tabFiltered.filter(c => c.caseStatus === "Missed").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const tempCement = tabFiltered.filter(c => c.caseStatus === "Temp cement").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    return { total, collected, unpaid: total - collected, free, completed, inProgress, correction, missed, tempCement, count: tabFiltered.length };
   }, [tabFiltered]);
 
   async function handleAddCase(form) {
     const row = await insertCase(session.user.id, form);
     if (row) {
       setCases(prev => [toLocal(row), ...prev]);
-      setToast("✅ تمت إضافة الحالة");
+      showToastMessage("✅ تمت إضافة الحالة");
     }
     setShowAdd(false);
   }
@@ -1425,7 +1587,7 @@ export default function App() {
       notes: form.notes || null,
     });
     setCases(prev => prev.map(x => x.id === c.id ? { ...x, ...form, totalAmount: form.pricePerUnit * form.units } : x));
-    setToast("✅ تم حفظ التعديل");
+    showToastMessage("✅ تم حفظ التعديل");
     setEditCase(null);
     setDetailCase(null);
   }
@@ -1435,7 +1597,7 @@ export default function App() {
     await deleteCaseDB(c.id);
     setCases(prev => prev.filter(x => x.id !== c.id));
     setDetailCase(null);
-    setToast("🗑 تم الحذف");
+    showToastMessage("🗑 تم الحذف");
   }
 
   async function handleUpdatePayment(c, newStatus) {
@@ -1445,7 +1607,7 @@ export default function App() {
     else if (newStatus === "Free" || newStatus === "Unpaid") updateData.paid_amount = 0;
     await updateCaseDB(c.id, updateData);
     setCases(prev => prev.map(x => x.id === c.id ? { ...x, paymentStatus: newStatus, paidAmount: updateData.paid_amount !== undefined ? updateData.paid_amount : x.paidAmount } : x));
-    setToast(newStatus === "Paid" ? "✅ مدفوع كامل" : (newStatus === "Free" ? "🎁 مجاناً" : "❌ غير مدفوع"));
+    showToastMessage(newStatus === "Paid" ? "✅ مدفوع كامل" : (newStatus === "Free" ? "🎁 مجاناً" : "❌ غير مدفوع"));
   }
 
   async function handleUpdateMaterial(c, newMaterialName) {
@@ -1454,48 +1616,73 @@ export default function App() {
     const newPrice = newMaterial?.price !== undefined ? newMaterial.price : c.pricePerUnit;
     await updateCaseDB(c.id, { material_name: newMaterialName, price_per_unit: newPrice });
     setCases(prev => prev.map(x => x.id === c.id ? { ...x, materialName: newMaterialName, pricePerUnit: newPrice, totalAmount: newPrice * x.units } : x));
-    setToast(`✅ تم تغيير المادة إلى ${newMaterialName}`);
+    showToastMessage(`✅ تم تغيير المادة إلى ${newMaterialName}`);
   }
 
   async function handleUpdateCaseStatus(c, newStatus) {
     if (c.caseStatus === newStatus) return;
     await updateCaseDB(c.id, { case_status: newStatus });
     setCases(prev => prev.map(x => x.id === c.id ? { ...x, caseStatus: newStatus } : x));
-    setToast(`✅ تم تغيير الحالة إلى ${newStatus}`);
+    showToastMessage(`✅ تم تغيير الحالة إلى ${newStatus}`);
   }
 
   async function handleSaveSettings(s) {
     await saveSettings(session.user.id, s);
     setSettings(s);
-    setToast("✅ تم حفظ الإعدادات");
+    showToastMessage("✅ تم حفظ الإعدادات");
   }
 
   async function handleImport(e) {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      const count = await importExcel(file, session.user.id, activeBranch !== "all" ? activeBranch : settings.branches[0], setToast);
+      const count = await importExcel(file, session.user.id, activeBranch !== "all" ? activeBranch : settings.branches[0], showToastMessage);
       const fresh = await fetchCases(session.user.id);
       setCases(fresh.map(toLocal));
-      setToast(`✅ تم استيراد ${count} حالة من Excel`);
+      showToastMessage(`✅ تم استيراد ${count} حالة من Excel`);
     } catch (err) {
-      setToast(`❌ خطأ في الاستيراد: ${err.message}`);
+      showToastMessage(`❌ خطأ في الاستيراد: ${err.message}`);
     }
     e.target.value = "";
   }
 
-  const exportCurrentView = useCallback(() => {
-    exportExcel(tabFiltered, `dental_${activeTab}`);
-    setToast(`✅ تم تصدير ${tabFiltered.length} حالة`);
-  }, [tabFiltered, activeTab, setToast]);
-
-  const exportAllData = useCallback(() => {
+  // دوال التصدير
+  const exportAll = useCallback(() => {
     exportExcel(cases, "dental_all_cases");
-    setToast(`✅ تم تصدير ${cases.length} حالة (كل البيانات)`);
-  }, [cases, setToast]);
+    showToastMessage(`✅ تم تصدير ${cases.length} حالة (كل البيانات)`);
+  }, [cases, showToastMessage]);
+
+  const exportCurrentMonth = useCallback(() => {
+    let dataToExport = tabFiltered;
+    if (activeTab === "current" && selectedYear !== "all") {
+      const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
+      dataToExport = patientSearchFiltered.filter(c => {
+        const d = c.actionDate || c.startDate || c.createdAt;
+        return monthKey(d) === targetMonth;
+      });
+    } else if (activeTab === "annual" && selectedYear !== "all") {
+      dataToExport = patientSearchFiltered.filter(c => {
+        const d = c.actionDate || c.startDate || c.createdAt;
+        return d && new Date(d).getFullYear() === selectedYear;
+      });
+    } else {
+      dataToExport = tabFiltered;
+    }
+    exportExcel(dataToExport, `dental_${activeTab}`);
+    showToastMessage(`✅ تم تصدير ${dataToExport.length} حالة`);
+  }, [patientSearchFiltered, tabFiltered, activeTab, selectedYear, selectedMonth, showToastMessage]);
+
+  const exportRange = useCallback((startDate, endDate) => {
+    const dataToExport = cases.filter(c => {
+      const d = c.startDate || c.createdAt;
+      return d >= startDate && d <= endDate;
+    });
+    exportExcel(dataToExport, `dental_range_${startDate}_to_${endDate}`);
+    showToastMessage(`✅ تم تصدير ${dataToExport.length} حالة في النطاق الزمني`);
+  }, [cases, showToastMessage]);
 
   const handleCardClick = (c, e) => {
-    if (e.target.closest('.badge') && e.target.closest('.dropdown-container')) return;
+    if (e.target.closest('.dropdown-container') || e.target.closest('.badge-clickable')) return;
     setDetailCase(c);
   };
 
@@ -1503,11 +1690,11 @@ export default function App() {
   if (!session) return <LoginScreen onLogin={s => setSession(s)} />;
 
   const tabs = [
-    { id: "current", label: "📅 الشهر المحدد" },
-    { id: "annual", label: "📅 السنة المحددة" },
-    { id: "active", label: "⚙️ قيد العمل" },
+    { id: "current", label: "📅 الشهر" },
+    { id: "annual", label: "📅 السنة" },
+    { id: "active", label: "⚙️ قيد" },
     { id: "missed", label: "⚠️ Missed" },
-    { id: "completed", label: "✅ المنتهية" },
+    { id: "completed", label: "✅ منتهية" },
   ];
 
   return (
@@ -1518,10 +1705,13 @@ export default function App() {
           <div className="header-title">🦷 Dental Tracker</div>
           <div className="header-actions">
             <input type="file" ref={importRef} accept=".xlsx, .xls" style={{ display: "none" }} onChange={handleImport} />
-            <button className="btn btn-ghost btn-sm" onClick={() => importRef.current?.click()}>📥 استيراد Excel</button>
-            <button className="btn btn-ghost btn-sm" onClick={exportCurrentView}>📤 تصدير</button>
-            <button className="btn btn-primary btn-sm" onClick={exportAllData}>📤 تصدير الكل</button>
-            <button className="btn btn-ghost btn-icon" onClick={() => setShowSettings(true)}>⚙️</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => importRef.current?.click()}>📥</button>
+            <div style={{ position: "relative" }}>
+              <button className="btn btn-ghost btn-sm" onClick={() => setShowExportDropdown(!showExportDropdown)}>📤▼</button>
+              {showExportDropdown && <ExportDropdown onExportAll={exportAll} onExportCurrent={exportCurrentMonth} onExportRange={() => setShowRangeExport(true)} onClose={() => setShowExportDropdown(false)} />}
+            </div>
+            <button className="btn btn-ghost btn-sm" onClick={() => setShowStats(true)}>📊</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => setShowSettings(true)}>⚙️</button>
             <button className="btn btn-ghost btn-sm" onClick={() => supabase.auth.signOut()}>خروج</button>
           </div>
         </div>
@@ -1530,7 +1720,7 @@ export default function App() {
       <div className="branch-bar">
         <span className="branch-label">الفرع:</span>
         <select className="branch-select" value={activeBranch} onChange={e => setActiveBranch(e.target.value)}>
-          <option value="all">🏥 كل الفروع</option>
+          <option value="all">🏥 الكل</option>
           {settings.branches.map(b => <option key={b} value={b}>{b}</option>)}
         </select>
       </div>
@@ -1538,7 +1728,7 @@ export default function App() {
       <div className="month-selector-wrapper">
         <span className="branch-label">السنة:</span>
         <select className="year-select" value={selectedYear} onChange={e => setSelectedYear(e.target.value)}>
-          <option value="all">📅 كل السنوات</option>
+          <option value="all">📅 الكل</option>
           {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
         
@@ -1561,53 +1751,29 @@ export default function App() {
       </div>
       
       <div className="main">
-        {/* إحصائيات البرنامج ككل */}
+        {/* إحصائيات الواجهة (حسب الفلتر الحالي) */}
         <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-label">📊 إجمالي الحالات (البرنامج)</div>
-            <div className="stat-value">{totalStats.count}</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-label">💰 إجمالي المبالغ (البرنامج)</div>
-            <div className="stat-value">{fmtMoney(totalStats.totalMoney)} ج.م</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-label">✅ إجمالي المحصل (البرنامج)</div>
-            <div className="stat-value">{fmtMoney(totalStats.totalCollected)} ج.م</div>
-          </div>
+          <div className="stat-card"><div className="stat-label">💰 الإجمالي</div><div className="stat-value">{fmtMoney(stats.total)}</div></div>
+          <div className="stat-card"><div className="stat-label">✅ المحصل</div><div className="stat-value">{fmtMoney(stats.collected)}</div></div>
+          <div className="stat-card"><div className="stat-label">⏳ المتبقي</div><div className="stat-value">{fmtMoney(stats.unpaid)}</div></div>
+          <div className="stat-card"><div className="stat-label">🎁 مجاناً</div><div className="stat-value">{fmtMoney(stats.free)}</div></div>
         </div>
         
-        {/* إحصائيات الفلتر الحالي */}
         <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-label">📋 عدد الحالات</div>
-            <div className="stat-value">{stats.count}</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-label">💰 إجمالي المبالغ</div>
-            <div className="stat-value">{fmtMoney(stats.total)} ج.م</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-label">✅ المحصل</div>
-            <div className="stat-value">{fmtMoney(stats.collected)} ج.م</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-label">⏳ المتبقي</div>
-            <div className="stat-value">{fmtMoney(stats.unpaid)} ج.م</div>
-          </div>
+          <div className="stat-card"><div className="stat-label">📋 منتهية</div><div className="stat-value">{fmtMoney(stats.completed)}</div></div>
+          <div className="stat-card"><div className="stat-label">⚙️ قيد العمل</div><div className="stat-value">{fmtMoney(stats.inProgress)}</div></div>
+          <div className="stat-card"><div className="stat-label">🔧 تصحيح</div><div className="stat-value">{fmtMoney(stats.correction)}</div></div>
+          <div className="stat-card"><div className="stat-label">⚠️ Missed</div><div className="stat-value">{fmtMoney(stats.missed)}</div></div>
         </div>
         
         <div className="toolbar">
           <div className="search-wrap">
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 بحث باسم المريض (جميع السنوات)..." />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 بحث باسم المريض..." />
           </div>
         </div>
         
         {loading ? <Spinner /> : tabFiltered.length === 0 ? (
-          <div className="empty">
-            <div className="empty-icon">📋</div>
-            <div className="empty-msg">{search ? `لا توجد حالات للمريض "${search}"` : "لا توجد حالات في هذا الفلتر"}</div>
-          </div>
+          <div className="empty"><div className="empty-icon">📋</div><div className="empty-msg">{search ? `لا توجد حالات للمريض "${search}"` : "لا توجد حالات"}</div></div>
         ) : (
           <div className="cases-grid">
             {tabFiltered.map((c, i) => {
@@ -1616,41 +1782,23 @@ export default function App() {
               return (
                 <div key={c.id} className="case-card" style={{ "--status-color": sm.color }}>
                   <div onClick={(e) => handleCardClick(c, e)}>
-                    <div className="case-name">{c.patientName}</div>
-                    <div className="case-date">{fmtDate(c.startDate)}</div>
+                    <div className="case-header">
+                      <div className="case-name">{c.patientName}</div>
+                      <div className="case-branch">{c.branchName}</div>
+                    </div>
                     <div className="case-badges">
-                      <BadgeDropdown 
-                        c={c} 
-                        type="status" 
-                        settings={settings} 
-                        onStatusChange={handleUpdateCaseStatus}
-                        setToast={setToast}
-                      />
-                      <BadgeDropdown 
-                        c={c} 
-                        type="material" 
-                        settings={settings} 
-                        onMaterialChange={handleUpdateMaterial}
-                        setToast={setToast}
-                      />
-                      <BadgeDropdown 
-                        c={c} 
-                        type="payment" 
-                        settings={settings} 
-                        onPaymentChange={handleUpdatePayment}
-                        setToast={setToast}
-                      />
+                      <BadgeDropdown c={c} type="status" settings={settings} onStatusChange={handleUpdateCaseStatus} setToast={showToastMessage} />
+                      <BadgeDropdown c={c} type="material" settings={settings} onMaterialChange={handleUpdateMaterial} setToast={showToastMessage} />
+                      <BadgeDropdown c={c} type="payment" settings={settings} onPaymentChange={handleUpdatePayment} setToast={showToastMessage} />
                     </div>
                     <div className="case-footer">
                       <div>
-                        <div className="case-amount">{fmtMoney(c.totalAmount)} ج.م</div>
-                        <div className="case-units">{c.units} وحدة × {c.pricePerUnit}</div>
+                        <span className="case-amount">{fmtMoney(c.totalAmount)} ج.م</span>
+                        <span className="case-units">  {c.units} × {c.pricePerUnit}</span>
                       </div>
-                      <span className="case-branch">{c.branchName}</span>
+                      <div className="case-date">{fmtDate(c.startDate)}</div>
                     </div>
-                    {c.paymentStatus === "Partial" && (
-                      <div style={{ fontSize: 10, color: "var(--mint)", marginTop: 6 }}>محصل: {fmtMoney(c.paidAmount)}</div>
-                    )}
+                    {c.paymentStatus === "Partial" && <div style={{ fontSize: 9, color: "var(--mint)", marginTop: 4 }}>محصل: {fmtMoney(c.paidAmount)}</div>}
                   </div>
                 </div>
               );
@@ -1660,19 +1808,15 @@ export default function App() {
       </div>
       
       <button className="btn-fab" onClick={() => setShowAdd(true)}>＋</button>
+      
       {showAdd && <CaseModal settings={settings} defaultBranch={activeBranch !== "all" ? activeBranch : settings.branches[0]} onSave={handleAddCase} onClose={() => setShowAdd(false)} />}
       {editCase && <CaseModal existing={editCase} settings={settings} defaultBranch={editCase.branchName} onSave={handleEditCase} onClose={() => setEditCase(null)} />}
-      {detailCase && <CaseDrawer 
-        c={detailCase} 
-        settings={settings} 
-        onEdit={c => { setEditCase(c); setDetailCase(null); }} 
-        onDelete={handleDelete} 
-        onUpdatePayment={handleUpdatePayment}
-        onClose={() => setDetailCase(null)}
-        setToast={setToast}
-      />}
-      {showSettings && <SettingsScreen settings={settings} onSave={handleSaveSettings} onClose={() => setShowSettings(false)} setToast={setToast} />}
-      <Toast msg={toast} />
+      {detailCase && <CaseDrawer c={detailCase} settings={settings} onEdit={c => { setEditCase(c); setDetailCase(null); }} onDelete={handleDelete} onUpdatePayment={handleUpdatePayment} onClose={() => setDetailCase(null)} setToast={showToastMessage} />}
+      {showSettings && <SettingsScreen settings={settings} onSave={handleSaveSettings} onClose={() => setShowSettings(false)} setToast={showToastMessage} />}
+      {showStats && <StatsModal cases={cases} onClose={() => setShowStats(false)} />}
+      {showRangeExport && <RangeExportModal onClose={() => setShowRangeExport(false)} onExport={exportRange} />}
+      
+      <Toast msg={toast} onClick={() => setToast("")} />
     </>
   );
 }
