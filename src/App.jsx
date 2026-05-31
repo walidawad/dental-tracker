@@ -55,14 +55,12 @@ const fmtMoney = (n) => Number(n || 0).toLocaleString("ar-EG");
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString("ar-EG", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 const monthKey = (d) => d ? d.slice(0, 7) : "";
 
-// تنسيق التاريخ للتصدير: يوم-شهر-سنة
 const formatDateForExport = (dateStr) => {
   if (!dateStr) return "";
   const d = new Date(dateStr);
   return `${d.getDate().toString().padStart(2, '0')}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getFullYear()}`;
 };
 
-// دالة التصدير إلى Excel
 function exportExcel(casesToExport, fileName = "dental_cases") {
   const data = casesToExport.map(c => ({
     "الفرع": c.branchName,
@@ -92,7 +90,6 @@ function exportExcel(casesToExport, fileName = "dental_cases") {
   XLSX.writeFile(workbook, `${fileName}_${todayISO()}.xlsx`);
 }
 
-// ========== CSS ==========
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -113,8 +110,8 @@ const CSS = `
   --text: #E8ECF8;
   --text2: #8A94B8;
   --text3: #4A5280;
-  --r: 10px;
-  --r2: 6px;
+  --r: 8px;
+  --r2: 5px;
 }
 
 html { direction: rtl; -webkit-text-size-adjust: 100%; }
@@ -171,58 +168,58 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: 0 12px;
+  padding: 0 10px;
 }
 .header-top {
-  height: 50px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: wrap;
 }
 .header-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   white-space: nowrap;
 }
-.header-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.header-actions { display: flex; gap: 5px; flex-wrap: wrap; }
 
 .branch-bar, .month-selector-wrapper {
-  padding: 6px 12px;
+  padding: 5px 10px;
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
   align-items: center;
   border-bottom: 1px solid var(--border);
 }
-.branch-label { font-size: 10px; color: var(--text3); font-weight: 700; }
+.branch-label { font-size: 9px; color: var(--text3); font-weight: 700; }
 .branch-select, .year-select, .month-select {
   background: var(--surface2);
   border: 1px solid var(--border2);
   border-radius: var(--r2);
   color: var(--text);
   font-family: 'Tajawal', sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 5px 10px;
+  padding: 4px 8px;
   cursor: pointer;
 }
 
 .tabs {
   display: flex;
-  gap: 4px;
-  padding: 6px 12px;
+  gap: 3px;
+  padding: 5px 10px;
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
 }
 .tab {
-  padding: 5px 12px;
-  border-radius: 16px;
-  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 10px;
   font-weight: 700;
   border: 1px solid var(--border);
   color: var(--text2);
@@ -232,56 +229,66 @@ body {
 }
 .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-.main { padding: 10px; max-width: 600px; margin: 0 auto; }
+.main { padding: 8px; max-width: 600px; margin: 0 auto; }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
 }
 .stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 8px 6px;
+  border-radius: 8px;
+  padding: 5px 3px;
   text-align: center;
 }
-.stat-label { font-size: 9px; color: var(--text2); font-weight: 700; margin-bottom: 4px; }
-.stat-value { font-size: 14px; font-weight: 900; word-break: break-word; }
+.stat-label {
+  font-size: 8px;
+  color: var(--text2);
+  font-weight: 700;
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+.stat-value {
+  font-size: 12px;
+  font-weight: 900;
+  word-break: break-word;
+}
 
 .toolbar {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 10px;
   flex-wrap: wrap;
 }
 .search-wrap {
   flex: 1;
-  min-width: 160px;
+  min-width: 150px;
 }
 .search-wrap input {
   width: 100%;
-  padding: 7px 10px;
+  padding: 6px 8px;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--r2);
   color: var(--text);
   font-family: 'Tajawal', sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   outline: none;
 }
 
 .cases-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
+  gap: 6px;
 }
 .case-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  padding: 8px 10px;
+  padding: 6px 8px;
   position: relative;
 }
 .case-card::after {
@@ -298,35 +305,35 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
-.case-name { font-size: 13px; font-weight: 700; word-break: break-word; }
-.case-date { font-size: 9px; color: var(--text3); }
+.case-name { font-size: 12px; font-weight: 700; word-break: break-word; }
+.case-date { font-size: 8px; color: var(--text3); }
 .case-badges {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: wrap;
-  margin: 6px 0;
+  margin: 5px 0;
 }
 .case-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 5px;
+  margin-top: 5px;
 }
-.case-amount { font-size: 14px; font-weight: 800; }
-.case-units { font-size: 9px; color: var(--text3); }
-.case-branch { font-size: 9px; color: var(--text2); background: var(--surface2); padding: 2px 6px; border-radius: 16px; }
+.case-amount { font-size: 13px; font-weight: 800; }
+.case-units { font-size: 8px; color: var(--text3); }
+.case-branch { font-size: 8px; color: var(--text2); background: var(--surface2); padding: 2px 5px; border-radius: 14px; }
 
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 3px 8px;
-  border-radius: 16px;
-  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 14px;
+  font-size: 9px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -342,21 +349,19 @@ body {
   border: 1px solid var(--border2);
   border-radius: var(--r2);
   z-index: 9999;
-  min-width: 140px;
-  max-width: 200px;
-  max-height: 220px;
+  min-width: 120px;
+  max-width: 180px;
+  max-height: 200px;
   overflow-y: auto;
   box-shadow: 0 4px 12px rgba(0,0,0,.5);
 }
 
 .dropdown-item {
-  padding: 8px 12px;
-  font-size: 11px;
+  padding: 6px 10px;
+  font-size: 10px;
   cursor: pointer;
   text-align: center;
   border-bottom: 1px solid var(--border);
-  transition: background 0.1s;
-  -webkit-tap-highlight-color: transparent;
 }
 .dropdown-item:active {
   background: var(--accent);
@@ -367,11 +372,11 @@ body {
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
+  gap: 3px;
+  padding: 4px 8px;
   border-radius: var(--r2);
   font-family: 'Tajawal', sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   border: none;
   cursor: pointer;
@@ -380,18 +385,18 @@ body {
 .btn-primary { background: var(--accent); color: #fff; }
 .btn-ghost { background: var(--surface2); border: 1px solid var(--border2); color: var(--text2); }
 .btn-danger { background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3); color: var(--rose); }
-.btn-sm { padding: 3px 8px; font-size: 10px; }
-.btn-icon { padding: 5px; }
+.btn-sm { padding: 2px 6px; font-size: 9px; }
+.btn-icon { padding: 4px; }
 .btn-fab {
   position: fixed;
   bottom: 16px;
   right: 16px;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), #6C63FF);
   color: #fff;
-  font-size: 20px;
+  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -409,54 +414,54 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px;
 }
 .modal {
   background: var(--surface);
   border: 1px solid var(--border2);
-  border-radius: 16px;
+  border-radius: 14px;
   width: 100%;
-  max-width: 500px;
+  max-width: 480px;
   max-height: 85vh;
   overflow-y: auto;
 }
 .modal-header {
-  padding: 12px 16px;
+  padding: 10px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border);
 }
-.modal-title { font-size: 15px; font-weight: 800; }
-.modal-body { padding: 14px 16px; }
-.modal-footer { padding: 10px 16px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+.modal-title { font-size: 14px; font-weight: 800; }
+.modal-body { padding: 12px 14px; }
+.modal-footer { padding: 8px 14px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
 
-.form-group { margin-bottom: 12px; }
-.form-label { display: block; font-size: 11px; font-weight: 700; color: var(--text2); margin-bottom: 3px; }
+.form-group { margin-bottom: 10px; }
+.form-label { display: block; font-size: 10px; font-weight: 700; color: var(--text2); margin-bottom: 3px; }
 .form-input {
   width: 100%;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--r2);
-  padding: 7px 10px;
+  padding: 6px 8px;
   color: var(--text);
   font-family: 'Tajawal', sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   outline: none;
 }
-.form-row { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.form-row { display: grid; grid-template-columns: 1fr; gap: 8px; }
 
 .total-preview {
   background: linear-gradient(135deg, rgba(61,126,255,.1), rgba(108,99,255,.08));
   border: 1px solid rgba(61,126,255,.25);
   border-radius: var(--r);
-  padding: 10px;
+  padding: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
-.total-preview-value { font-size: 18px; font-weight: 900; color: var(--gold); }
+.total-preview-value { font-size: 16px; font-weight: 900; color: var(--gold); }
 
 .drawer {
   position: fixed;
@@ -471,43 +476,43 @@ body {
 }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: none; } }
 .drawer-header {
-  padding: 12px;
+  padding: 10px;
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
 }
-.drawer-body { padding: 12px; }
-.drawer-section { margin-bottom: 16px; }
-.drawer-section-title { font-size: 10px; font-weight: 700; color: var(--text3); margin-bottom: 6px; }
+.drawer-body { padding: 10px; }
+.drawer-section { margin-bottom: 14px; }
+.drawer-section-title { font-size: 9px; font-weight: 700; color: var(--text3); margin-bottom: 5px; }
 .detail-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 0;
+  padding: 5px 0;
   border-bottom: 1px solid var(--border);
 }
-.detail-key { font-size: 11px; color: var(--text2); }
-.detail-val { font-size: 11px; font-weight: 600; color: var(--text); }
+.detail-key { font-size: 10px; color: var(--text2); }
+.detail-val { font-size: 10px; font-weight: 600; color: var(--text); }
 
-.settings-section { margin-bottom: 20px; }
+.settings-section { margin-bottom: 16px; }
 .settings-section-title {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 .settings-list-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 10px;
+  padding: 5px 8px;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--r2);
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
-.settings-list-item-name { font-size: 12px; font-weight: 600; }
+.settings-list-item-name { font-size: 11px; font-weight: 600; }
 
 .toast {
   position: fixed;
@@ -516,9 +521,9 @@ body {
   transform: translateX(-50%);
   background: var(--surface2);
   border: 1px solid var(--border2);
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 18px;
+  font-size: 10px;
   color: var(--text);
   z-index: 2000;
   max-width: 85%;
@@ -527,17 +532,32 @@ body {
 }
 
 .empty { text-align: center; padding: 30px 16px; color: var(--text3); }
-.empty-icon { font-size: 32px; margin-bottom: 8px; opacity: .3; }
-.loading { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 30px; }
-.spinner { width: 16px; height: 16px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+.empty-icon { font-size: 28px; margin-bottom: 6px; opacity: .3; }
+.loading { display: flex; align-items: center; justify-content: center; gap: 5px; padding: 30px; }
+.spinner { width: 14px; height: 14px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.divider { height: 1px; background: var(--border); margin: 12px 0; }
+.divider { height: 1px; background: var(--border); margin: 10px 0; }
 
 @media (min-width: 640px) {
-  .stats-grid { grid-template-columns: repeat(4, 1fr); }
-  .drawer { width: min(360px, 100vw); }
+  .drawer { width: min(320px, 100vw); }
   .form-row { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+  }
+  .stat-card {
+    padding: 4px 2px;
+  }
+  .stat-label {
+    font-size: 7px;
+  }
+  .stat-value {
+    font-size: 10px;
+  }
 }
 `;
 
@@ -623,7 +643,6 @@ const toLocal = (r) => ({
   createdAt: r.created_at,
 });
 
-// ========== دالة الاستيراد المحسنة ==========
 async function importExcel(file, userId, currentBranch, setToast) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -639,9 +658,6 @@ async function importExcel(file, userId, currentBranch, setToast) {
           reject(new Error("لا توجد بيانات في الملف"));
           return;
         }
-        
-        console.log("عدد الصفوف المستوردة:", rows.length);
-        console.log("أسماء الأعمدة:", Object.keys(rows[0]));
         
         let count = 0;
         for (const row of rows) {
@@ -714,7 +730,6 @@ async function importExcel(file, userId, currentBranch, setToast) {
           count++;
         }
         
-        console.log(`تم استيراد ${count} حالة بنجاح`);
         resolve(count);
       } catch (err) {
         console.error("Import error:", err);
@@ -789,13 +804,13 @@ function LoginScreen({ onLogin }) {
             <label className="form-label">كلمة المرور</label>
             <input className="form-input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
           </div>
-          {err && <div style={{ fontSize: 12, color: err.includes("✉️") ? "var(--mint)" : "var(--rose)", marginBottom: 10, padding: "6px 10px", background: "rgba(239,68,68,.08)", borderRadius: 6 }}>{err}</div>}
-          <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: "100%", justifyContent: "center", padding: "8px" }}>
+          {err && <div style={{ fontSize: 11, color: err.includes("✉️") ? "var(--mint)" : "var(--rose)", marginBottom: 8, padding: "5px 8px", background: "rgba(239,68,68,.08)", borderRadius: 5 }}>{err}</div>}
+          <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: "100%", justifyContent: "center", padding: "7px" }}>
             {loading ? "جاري..." : mode === "login" ? "تسجيل الدخول" : "إنشاء حساب"}
           </button>
         </form>
-        <div style={{ textAlign: "center", marginTop: 14 }}>
-          <button onClick={() => setMode(m => m === "login" ? "signup" : "login")} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontFamily: "Tajawal", fontSize: 12 }}>
+        <div style={{ textAlign: "center", marginTop: 12 }}>
+          <button onClick={() => setMode(m => m === "login" ? "signup" : "login")} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontFamily: "Tajawal", fontSize: 11 }}>
             {mode === "login" ? "مش عندك حساب؟ سجّل دلوقتي" : "عندك حساب؟ ادخل"}
           </button>
         </div>
@@ -857,12 +872,12 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <span className="modal-title">{isEdit ? "✏️ تعديل الحالة" : "➕ حالة جديدة"}</span>
+          <span className="modal-title">{isEdit ? "✏️ تعديل" : "➕ حالة جديدة"}</span>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
           <div className="total-preview">
-            <div className="total-preview-label">إجمالي الحالة</div>
+            <div className="total-preview-label">الإجمالي</div>
             <div className="total-preview-value">{total.toLocaleString("ar-EG")} ج.م</div>
           </div>
           <div className="form-group">
@@ -876,16 +891,14 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label">المادة / الإجراء</label>
+            <label className="form-label">المادة</label>
             <select className="form-input" value={form.materialName} onChange={e => handleMaterial(e.target.value)}>
-              {settings.materials.map(m => (
-                <option key={m.id} value={m.name}>{m.name}{m.price ? ` — ${m.price} ج.م` : " — سعر حر"}</option>
-              ))}
+              {settings.materials.map(m => <option key={m.id} value={m.name}>{m.name}</option>)}
             </select>
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">عدد الوحدات</label>
+              <label className="form-label">الوحدات</label>
               <input className="form-input" type="number" min="1" value={form.units} onChange={e => setForm(f => ({ ...f, units: parseInt(e.target.value) || 1 }))} />
             </div>
             <div className="form-group">
@@ -895,17 +908,15 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">حالة الكيس</label>
+              <label className="form-label">الحالة</label>
               <select className="form-input" value={form.caseStatus} onChange={e => handleStatus(e.target.value)}>
-                {settings.caseStatuses.map(s => (
-                  <option key={s.id} value={s.name}>{STATUS_META[s.name]?.icon} {s.name}</option>
-                ))}
+                {settings.caseStatuses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">حالة الدفع</label>
+              <label className="form-label">الدفع</label>
               <select className="form-input" value={form.paymentStatus} onChange={e => setForm(f => ({ ...f, paymentStatus: e.target.value }))}>
-                {settings.paymentStatuses.map(s => <option key={s.id} value={s.name}>{s.name === "Paid" ? "مدفوع كامل" : (s.name === "Free" ? "مجاناً" : (s.name === "Partial" ? "مدفوع جزئي" : "غير مدفوع"))}</option>)}
+                {settings.paymentStatuses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
               </select>
             </div>
           </div>
@@ -913,7 +924,7 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
             <div className="form-group">
               <label className="form-label">المبلغ المحصل</label>
               <input className="form-input" type="number" value={form.paidAmount} onChange={e => setForm(f => ({ ...f, paidAmount: parseFloat(e.target.value) || 0 }))} placeholder="المبلغ المدفوع" />
-              <div style={{ fontSize: 10, color: "var(--text3)", marginTop: 3 }}>المتبقي: {remaining.toLocaleString("ar-EG")} ج.م</div>
+              <div style={{ fontSize: 9, color: "var(--text3)", marginTop: 2 }}>المتبقي: {remaining.toLocaleString("ar-EG")} ج.م</div>
             </div>
           )}
           <div className="form-row">
@@ -942,7 +953,6 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
   );
 }
 
-// ========== مكون القائمة المنسدلة ==========
 function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, onPaymentChange, setToast }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
@@ -956,7 +966,7 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
     const rect = e.currentTarget.getBoundingClientRect();
     const windowHeight = window.innerHeight;
     const spaceBelow = windowHeight - rect.bottom;
-    const dropdownHeight = 220;
+    const dropdownHeight = 200;
     
     let top = rect.bottom + 5;
     
@@ -1005,15 +1015,7 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
             style={{ position: 'fixed', top: dropdownPosition.top, left: dropdownPosition.left, zIndex: 9999 }}
           >
             {settings.caseStatuses.map(s => (
-              <div 
-                key={s.id} 
-                className="dropdown-item" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onStatusChange(c, s.name);
-                  setDropdownOpen(false);
-                }}
-              >
+              <div key={s.id} className="dropdown-item" onClick={(e) => { e.stopPropagation(); onStatusChange(c, s.name); setDropdownOpen(false); }}>
                 {STATUS_META[s.name]?.icon} {s.name}
               </div>
             ))}
@@ -1042,15 +1044,7 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
             style={{ position: 'fixed', top: dropdownPosition.top, left: dropdownPosition.left, zIndex: 9999 }}
           >
             {settings.materials.map(m => (
-              <div 
-                key={m.id} 
-                className="dropdown-item" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onMaterialChange(c, m.name);
-                  setDropdownOpen(false);
-                }}
-              >
+              <div key={m.id} className="dropdown-item" onClick={(e) => { e.stopPropagation(); onMaterialChange(c, m.name); setDropdownOpen(false); }}>
                 {m.name} {m.price ? `(${m.price})` : ''}
               </div>
             ))}
@@ -1062,9 +1056,9 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
 
   if (type === 'payment') {
     const getPaymentLabel = (status, paidAmount) => {
-      if (status === "Paid") return "مدفوع كامل";
+      if (status === "Paid") return "مدفوع";
       if (status === "Free") return "مجاناً";
-      if (status === "Partial") return `مدفوع جزئي (${fmtMoney(paidAmount)})`;
+      if (status === "Partial") return `مدفوع جزئي`;
       return "غير مدفوع";
     };
     const paymentColor = c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)"));
@@ -1087,16 +1081,8 @@ function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, on
             style={{ position: 'fixed', top: dropdownPosition.top, left: dropdownPosition.left, zIndex: 9999 }}
           >
             {settings.paymentStatuses.filter(s => s.name !== "Partial").map(s => (
-              <div 
-                key={s.id} 
-                className="dropdown-item" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPaymentChange(c, s.name);
-                  setDropdownOpen(false);
-                }}
-              >
-                {s.name === "Paid" ? "✅ مدفوع كامل" : (s.name === "Free" ? "🎁 مجاناً" : "❌ غير مدفوع")}
+              <div key={s.id} className="dropdown-item" onClick={(e) => { e.stopPropagation(); onPaymentChange(c, s.name); setDropdownOpen(false); }}>
+                {s.name === "Paid" ? "✅ مدفوع" : (s.name === "Free" ? "🎁 مجاناً" : "❌ غير مدفوع")}
               </div>
             ))}
           </div>
@@ -1114,9 +1100,9 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose, s
   const remaining = (c.totalAmount || 0) - (c.paidAmount || 0);
   
   const getPaymentLabel = (status) => {
-    if (status === "Paid") return "مدفوع كامل";
+    if (status === "Paid") return "مدفوع";
     if (status === "Free") return "مجاناً";
-    if (status === "Partial") return `مدفوع جزئي (${fmtMoney(c.paidAmount)} ج.م)`;
+    if (status === "Partial") return `مدفوع جزئي (${fmtMoney(c.paidAmount)})`;
     return "غير مدفوع";
   };
 
@@ -1126,8 +1112,8 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose, s
       <div className="drawer">
         <div className="drawer-header">
           <div>
-            <div style={{ fontSize: 15, fontWeight: 800 }}>{c.patientName}</div>
-            <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 6 }}>
+            <div style={{ fontSize: 14, fontWeight: 800 }}>{c.patientName}</div>
+            <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 5 }}>
               <Badge label={c.caseStatus} color={sm.color} bg={sm.bg} icon={sm.icon} />
               <Badge label={c.materialName} color={mc} bg={mc + "20"} />
               <Badge label={getPaymentLabel(c.paymentStatus)} color={c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : "var(--rose)")} />
@@ -1176,9 +1162,9 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose, s
               </div>
             )}
           </div>
-          <div style={{ display: "flex", gap: 6, flexDirection: "column" }}>
-            <button className="btn btn-ghost" onClick={() => onEdit(c)}>✏️ تعديل الحالة</button>
-            <button className="btn btn-danger" onClick={() => onDelete(c)}>🗑 حذف الحالة</button>
+          <div style={{ display: "flex", gap: 5, flexDirection: "column" }}>
+            <button className="btn btn-ghost" onClick={() => onEdit(c)}>✏️ تعديل</button>
+            <button className="btn btn-danger" onClick={() => onDelete(c)}>🗑 حذف</button>
           </div>
         </div>
       </div>
@@ -1250,7 +1236,7 @@ function SettingsScreen({ settings, onSave, onClose, setToast }) {
     if (error) {
       setToast("❌ خطأ: " + error.message);
     } else {
-      setToast("✅ تم تحديث كلمة المرور بنجاح!");
+      setToast("✅ تم تحديث كلمة المرور!");
       setNewPassword("");
     }
   }
@@ -1264,7 +1250,7 @@ function SettingsScreen({ settings, onSave, onClose, setToast }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
+      <div className="modal" style={{ maxWidth: 450 }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <span className="modal-title">⚙️ الإعدادات</span>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
@@ -1273,31 +1259,25 @@ function SettingsScreen({ settings, onSave, onClose, setToast }) {
           <div className="settings-section">
             <div className="settings-section-title">🔐 تغيير كلمة المرور</div>
             <div className="form-group">
-              <input 
-                type="password" 
-                className="form-input" 
-                placeholder="كلمة المرور الجديدة" 
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
+              <input type="password" className="form-input" placeholder="كلمة المرور الجديدة" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
             </div>
             <button className="btn btn-primary" onClick={handleUpdatePassword} disabled={updatingPassword}>
-              {updatingPassword ? "جاري..." : "تغيير كلمة المرور"}
+              {updatingPassword ? "جاري..." : "تغيير"}
             </button>
           </div>
           
           <div className="divider" />
           
           <div className="settings-section">
-            <div className="settings-section-title">🏥 إدارة الفروع</div>
+            <div className="settings-section-title">🏥 الفروع</div>
             {s.branches.map(b => (
               <div key={b} className="settings-list-item">
                 <span className="settings-list-item-name">{b}</span>
                 {s.branches.length > 1 && <button className="btn btn-danger btn-sm" onClick={() => delBranch(b)}>حذف</button>}
               </div>
             ))}
-            <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-              <input className="form-input" value={newBranch} onChange={e => setNewBranch(e.target.value)} placeholder="اسم الفرع الجديد" onKeyDown={e => e.key === "Enter" && addBranch()} />
+            <div style={{ display: "flex", gap: 5, marginTop: 5 }}>
+              <input className="form-input" value={newBranch} onChange={e => setNewBranch(e.target.value)} placeholder="اسم فرع جديد" onKeyDown={e => e.key === "Enter" && addBranch()} />
               <button className="btn btn-primary btn-sm" onClick={addBranch}>إضافة</button>
             </div>
           </div>
@@ -1305,38 +1285,28 @@ function SettingsScreen({ settings, onSave, onClose, setToast }) {
           <div className="divider" />
           
           <div className="settings-section">
-            <div className="settings-section-title">💊 المواد والأسعار</div>
-            <div style={{ fontSize: 10, color: "var(--text3)", marginBottom: 6 }}>⚠️ تغيير الأسعار هنا لن يؤثر على الحالات القديمة</div>
+            <div className="settings-section-title">💊 المواد</div>
+            <div style={{ fontSize: 9, color: "var(--text3)", marginBottom: 5 }}>⚠️ تغيير السعر لا يؤثر على الحالات القديمة</div>
             {s.materials.map(m => (
               <div key={m.id} className="settings-list-item">
                 <div>
-                  <div className="settings-list-item-name" style={{ color: MAT_COLORS[m.name] || "var(--accent)" }}>{m.name}</div>
+                  <div className="settings-list-item-name">{m.name}</div>
                   <div className="settings-list-item-sub">
                     {editingMaterial === m.id ? (
-                      <input 
-                        className="form-input" 
-                        type="number" 
-                        defaultValue={m.price ?? ""} 
-                        style={{ width: 90, padding: "3px 6px", fontSize: 11 }}
-                        onBlur={(e) => updateMaterialPrice(m.id, e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && updateMaterialPrice(m.id, e.target.value)}
-                        autoFocus
-                      />
+                      <input className="form-input" type="number" defaultValue={m.price ?? ""} style={{ width: 80, padding: "2px 5px", fontSize: 10 }} onBlur={(e) => updateMaterialPrice(m.id, e.target.value)} onKeyDown={(e) => e.key === "Enter" && updateMaterialPrice(m.id, e.target.value)} autoFocus />
                     ) : (
-                      m.price !== null && m.price !== undefined ? `${m.price} ج.م / وحدة` : "سعر حر (يحدد عند الإضافة)"
+                      m.price !== null && m.price !== undefined ? `${m.price} ج.م` : "سعر حر"
                     )}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 4 }}>
-                  {m.price !== null && (
-                    <button className="btn btn-ghost btn-sm" onClick={() => setEditingMaterial(m.id)}>تعديل</button>
-                  )}
+                <div style={{ display: "flex", gap: 3 }}>
+                  {m.price !== null && <button className="btn btn-ghost btn-sm" onClick={() => setEditingMaterial(m.id)}>تعديل</button>}
                   <button className="btn btn-danger btn-sm" onClick={() => deleteMaterial(m.id)}>حذف</button>
                 </div>
               </div>
             ))}
-            <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-              <input className="form-input" value={newMaterial.name} onChange={e => setNewMaterial({ ...newMaterial, name: e.target.value })} placeholder="اسم المادة" style={{ flex: 2 }} />
+            <div style={{ display: "flex", gap: 5, marginTop: 6 }}>
+              <input className="form-input" value={newMaterial.name} onChange={e => setNewMaterial({ ...newMaterial, name: e.target.value })} placeholder="مادة جديدة" style={{ flex: 2 }} />
               <input className="form-input" type="number" value={newMaterial.price} onChange={e => setNewMaterial({ ...newMaterial, price: e.target.value })} placeholder="السعر" style={{ flex: 1 }} />
               <button className="btn btn-primary btn-sm" onClick={addMaterial}>➕</button>
             </div>
@@ -1351,45 +1321,34 @@ function SettingsScreen({ settings, onSave, onClose, setToast }) {
   );
 }
 
-// نافذة الإحصائيات التفصيلية
 function StatsModal({ cases, onClose }) {
   const totalCases = cases.length;
   const totalMoney = cases.reduce((sum, c) => sum + (c.totalAmount || 0), 0);
   const totalCollected = cases.reduce((sum, c) => sum + (c.paidAmount || 0), 0);
-  const totalUnpaid = totalMoney - totalCollected;
   const totalFree = cases.filter(c => c.paymentStatus === "Free").reduce((sum, c) => sum + (c.totalAmount || 0), 0);
-
   const completedCases = cases.filter(c => c.caseStatus === "Completed").length;
   const inProgressCases = cases.filter(c => c.caseStatus === "In progress").length;
   const correctionCases = cases.filter(c => c.caseStatus === "Correction").length;
   const missedCases = cases.filter(c => c.caseStatus === "Missed").length;
-  const tempCementCases = cases.filter(c => c.caseStatus === "Temp cement").length;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 400 }} onClick={e => e.stopPropagation()}>
+      <div className="modal" style={{ maxWidth: 350 }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <span className="modal-title">📊 إحصائيات البرنامج</span>
+          <span className="modal-title">📊 الإحصائيات</span>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-          <div style={{ marginBottom: 12 }}>
-            <div className="drawer-section-title">📋 إجماليات البرنامج</div>
-            <div className="detail-row"><span className="detail-key">إجمالي الحالات</span><span className="detail-val">{totalCases}</span></div>
-            <div className="detail-row"><span className="detail-key">إجمالي المبالغ</span><span className="detail-val">{fmtMoney(totalMoney)} ج.م</span></div>
-            <div className="detail-row"><span className="detail-key">إجمالي المحصل</span><span className="detail-val">{fmtMoney(totalCollected)} ج.م</span></div>
-            <div className="detail-row"><span className="detail-key">المتبقي</span><span className="detail-val">{fmtMoney(totalUnpaid)} ج.م</span></div>
-            <div className="detail-row"><span className="detail-key">مجاناً</span><span className="detail-val">{fmtMoney(totalFree)} ج.م</span></div>
-          </div>
+          <div className="detail-row"><span className="detail-key">إجمالي الحالات</span><span className="detail-val">{totalCases}</span></div>
+          <div className="detail-row"><span className="detail-key">إجمالي المبالغ</span><span className="detail-val">{fmtMoney(totalMoney)} ج.م</span></div>
+          <div className="detail-row"><span className="detail-key">المحصل</span><span className="detail-val">{fmtMoney(totalCollected)} ج.م</span></div>
+          <div className="detail-row"><span className="detail-key">المتبقي</span><span className="detail-val">{fmtMoney(totalMoney - totalCollected)} ج.م</span></div>
+          <div className="detail-row"><span className="detail-key">مجاناً</span><span className="detail-val">{fmtMoney(totalFree)} ج.م</span></div>
           <div className="divider" />
-          <div>
-            <div className="drawer-section-title">📌 حسب حالة الكيس</div>
-            <div className="detail-row"><span className="detail-key">✅ المنتهية (Completed)</span><span className="detail-val">{completedCases}</span></div>
-            <div className="detail-row"><span className="detail-key">⚙️ قيد العمل (In progress)</span><span className="detail-val">{inProgressCases}</span></div>
-            <div className="detail-row"><span className="detail-key">🔧 تصحيح (Correction)</span><span className="detail-val">{correctionCases}</span></div>
-            <div className="detail-row"><span className="detail-key">⚠️ Missed</span><span className="detail-val">{missedCases}</span></div>
-            <div className="detail-row"><span className="detail-key">🔩 Temp cement</span><span className="detail-val">{tempCementCases}</span></div>
-          </div>
+          <div className="detail-row"><span className="detail-key">✅ منتهية</span><span className="detail-val">{completedCases}</span></div>
+          <div className="detail-row"><span className="detail-key">⚙️ قيد العمل</span><span className="detail-val">{inProgressCases}</span></div>
+          <div className="detail-row"><span className="detail-key">🔧 تصحيح</span><span className="detail-val">{correctionCases}</span></div>
+          <div className="detail-row"><span className="detail-key">⚠️ Missed</span><span className="detail-val">{missedCases}</span></div>
         </div>
         <div className="modal-footer">
           <button className="btn btn-primary" onClick={onClose}>إغلاق</button>
@@ -1399,19 +1358,13 @@ function StatsModal({ cases, onClose }) {
   );
 }
 
-// نافذة تصدير النطاق الزمني
 function RangeExportModal({ onClose, onExport }) {
   const [startDate, setStartDate] = useState(todayISO());
   const [endDate, setEndDate] = useState(todayISO());
 
-  const handleExport = () => {
-    onExport(startDate, endDate);
-    onClose();
-  };
-
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 380 }} onClick={e => e.stopPropagation()}>
+      <div className="modal" style={{ maxWidth: 350 }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <span className="modal-title">📆 تصدير نطاق زمني</span>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
@@ -1428,22 +1381,19 @@ function RangeExportModal({ onClose, onExport }) {
         </div>
         <div className="modal-footer">
           <button className="btn btn-ghost" onClick={onClose}>إلغاء</button>
-          <button className="btn btn-primary" onClick={handleExport}>تصدير</button>
+          <button className="btn btn-primary" onClick={() => { onExport(startDate, endDate); onClose(); }}>تصدير</button>
         </div>
       </div>
     </div>
   );
 }
 
-// قائمة التصدير المنسدلة
 function ExportDropdown({ onExportAll, onExportCurrent, onExportRange, onClose }) {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        onClose();
-      }
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) onClose();
     };
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("touchstart", handleClickOutside);
@@ -1454,10 +1404,10 @@ function ExportDropdown({ onExportAll, onExportCurrent, onExportRange, onClose }
   }, [onClose]);
 
   return (
-    <div ref={dropdownRef} className="dropdown-menu" style={{ position: 'fixed', top: 50, left: 'auto', right: 60, zIndex: 9999 }}>
-      <div className="dropdown-item" onClick={() => { onExportAll(); onClose(); }}>📤 تصدير الكل</div>
-      <div className="dropdown-item" onClick={() => { onExportCurrent(); onClose(); }}>📅 تصدير الشهر الحالي</div>
-      <div className="dropdown-item" onClick={() => { onExportRange(); onClose(); }}>📆 تصدير نطاق زمني...</div>
+    <div ref={dropdownRef} className="dropdown-menu" style={{ position: 'fixed', top: 45, left: 'auto', right: 50, zIndex: 9999 }}>
+      <div className="dropdown-item" onClick={() => { onExportAll(); onClose(); }}>📤 الكل</div>
+      <div className="dropdown-item" onClick={() => { onExportCurrent(); onClose(); }}>📅 الشهر الحالي</div>
+      <div className="dropdown-item" onClick={() => { onExportRange(); onClose(); }}>📆 نطاق زمني</div>
     </div>
   );
 }
@@ -1512,14 +1462,11 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (toast) setToast("");
-    };
+    const handleScroll = () => { if (toast) setToast(""); };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [toast]);
 
-  // إحصائيات البرنامج ككل (بدون فلاتر)
   const totalStats = useMemo(() => {
     const count = cases.length;
     const totalMoney = cases.reduce((sum, c) => sum + (c.totalAmount || 0), 0);
@@ -1527,14 +1474,12 @@ export default function App() {
     return { count, totalMoney, totalCollected };
   }, [cases]);
 
-  // البحث شامل لكل الحالات (بدون فلتر سنة)
   const patientSearchFiltered = useMemo(() => {
     if (!search.trim()) return cases;
     const q = search.toLowerCase().trim();
     return cases.filter(c => c.patientName.toLowerCase().includes(q));
   }, [cases, search]);
 
-  // فلتر الفرع بعد البحث
   const branchFiltered = useMemo(() => 
     activeBranch === "all" ? patientSearchFiltered : patientSearchFiltered.filter(c => c.branchName === activeBranch),
     [patientSearchFiltered, activeBranch]
@@ -1548,7 +1493,6 @@ export default function App() {
 
   const months = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
-  // الفلترة حسب التبويب (شهري/سنوي/حسب الحالة)
   const tabFiltered = useMemo(() => {
     let arr = branchFiltered;
     
@@ -1578,7 +1522,6 @@ export default function App() {
     return arr;
   }, [branchFiltered, activeTab, selectedYear, selectedMonth]);
 
-  // إحصائيات الفلتر الحالي (للواجهة)
   const stats = useMemo(() => {
     const total = tabFiltered.reduce((s, c) => s + (c.totalAmount || 0), 0);
     const collected = tabFiltered.reduce((s, c) => s + (c.paidAmount || 0), 0);
@@ -1595,7 +1538,7 @@ export default function App() {
     const row = await insertCase(session.user.id, form);
     if (row) {
       setCases(prev => [toLocal(row), ...prev]);
-      showToastMessage("✅ تمت إضافة الحالة");
+      showToastMessage("✅ تمت الإضافة");
     }
     setShowAdd(false);
   }
@@ -1616,7 +1559,7 @@ export default function App() {
       notes: form.notes || null,
     });
     setCases(prev => prev.map(x => x.id === c.id ? { ...x, ...form, totalAmount: form.pricePerUnit * form.units } : x));
-    showToastMessage("✅ تم حفظ التعديل");
+    showToastMessage("✅ تم الحفظ");
     setEditCase(null);
     setDetailCase(null);
   }
@@ -1636,7 +1579,7 @@ export default function App() {
     else if (newStatus === "Free" || newStatus === "Unpaid") updateData.paid_amount = 0;
     await updateCaseDB(c.id, updateData);
     setCases(prev => prev.map(x => x.id === c.id ? { ...x, paymentStatus: newStatus, paidAmount: updateData.paid_amount !== undefined ? updateData.paid_amount : x.paidAmount } : x));
-    showToastMessage(newStatus === "Paid" ? "✅ مدفوع كامل" : (newStatus === "Free" ? "🎁 مجاناً" : "❌ غير مدفوع"));
+    showToastMessage(newStatus === "Paid" ? "✅ مدفوع" : (newStatus === "Free" ? "🎁 مجاناً" : "❌ غير مدفوع"));
   }
 
   async function handleUpdateMaterial(c, newMaterialName) {
@@ -1645,14 +1588,14 @@ export default function App() {
     const newPrice = newMaterial?.price !== undefined ? newMaterial.price : c.pricePerUnit;
     await updateCaseDB(c.id, { material_name: newMaterialName, price_per_unit: newPrice });
     setCases(prev => prev.map(x => x.id === c.id ? { ...x, materialName: newMaterialName, pricePerUnit: newPrice, totalAmount: newPrice * x.units } : x));
-    showToastMessage(`✅ تم تغيير المادة إلى ${newMaterialName}`);
+    showToastMessage(`✅ تم تغيير المادة`);
   }
 
   async function handleUpdateCaseStatus(c, newStatus) {
     if (c.caseStatus === newStatus) return;
     await updateCaseDB(c.id, { case_status: newStatus });
     setCases(prev => prev.map(x => x.id === c.id ? { ...x, caseStatus: newStatus } : x));
-    showToastMessage(`✅ تم تغيير الحالة إلى ${newStatus}`);
+    showToastMessage(`✅ تم تغيير الحالة`);
   }
 
   async function handleSaveSettings(s) {
@@ -1668,46 +1611,34 @@ export default function App() {
       const count = await importExcel(file, session.user.id, activeBranch !== "all" ? activeBranch : settings.branches[0], showToastMessage);
       const fresh = await fetchCases(session.user.id);
       setCases(fresh.map(toLocal));
-      showToastMessage(`✅ تم استيراد ${count} حالة من Excel`);
+      showToastMessage(`✅ تم استيراد ${count} حالة`);
     } catch (err) {
-      showToastMessage(`❌ خطأ في الاستيراد: ${err.message}`);
+      showToastMessage(`❌ خطأ: ${err.message}`);
     }
     e.target.value = "";
   }
 
-  // دوال التصدير
   const exportAll = useCallback(() => {
-    exportExcel(cases, "dental_all_cases");
-    showToastMessage(`✅ تم تصدير ${cases.length} حالة (كل البيانات)`);
+    exportExcel(cases, "dental_all");
+    showToastMessage(`✅ تم تصدير ${cases.length} حالة`);
   }, [cases, showToastMessage]);
 
   const exportCurrentMonth = useCallback(() => {
     let dataToExport = tabFiltered;
     if (activeTab === "current" && selectedYear !== "all") {
       const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
-      dataToExport = patientSearchFiltered.filter(c => {
-        const d = c.actionDate || c.startDate || c.createdAt;
-        return monthKey(d) === targetMonth;
-      });
+      dataToExport = patientSearchFiltered.filter(c => monthKey(c.actionDate || c.startDate || c.createdAt) === targetMonth);
     } else if (activeTab === "annual" && selectedYear !== "all") {
-      dataToExport = patientSearchFiltered.filter(c => {
-        const d = c.actionDate || c.startDate || c.createdAt;
-        return d && new Date(d).getFullYear() === selectedYear;
-      });
-    } else {
-      dataToExport = tabFiltered;
+      dataToExport = patientSearchFiltered.filter(c => new Date(c.actionDate || c.startDate || c.createdAt).getFullYear() === selectedYear);
     }
-    exportExcel(dataToExport, `dental_${activeTab}`);
+    exportExcel(dataToExport, `dental_filtered`);
     showToastMessage(`✅ تم تصدير ${dataToExport.length} حالة`);
   }, [patientSearchFiltered, tabFiltered, activeTab, selectedYear, selectedMonth, showToastMessage]);
 
   const exportRange = useCallback((startDate, endDate) => {
-    const dataToExport = cases.filter(c => {
-      const d = c.startDate || c.createdAt;
-      return d >= startDate && d <= endDate;
-    });
-    exportExcel(dataToExport, `dental_range_${startDate}_to_${endDate}`);
-    showToastMessage(`✅ تم تصدير ${dataToExport.length} حالة في النطاق الزمني`);
+    const dataToExport = cases.filter(c => (c.startDate || c.createdAt) >= startDate && (c.startDate || c.createdAt) <= endDate);
+    exportExcel(dataToExport, `dental_range`);
+    showToastMessage(`✅ تم تصدير ${dataToExport.length} حالة`);
   }, [cases, showToastMessage]);
 
   const handleCardClick = (c, e) => {
@@ -1780,29 +1711,26 @@ export default function App() {
       </div>
       
       <div className="main">
-        {/* إحصائيات الواجهة (حسب الفلتر الحالي) */}
         <div className="stats-grid">
           <div className="stat-card"><div className="stat-label">💰 الإجمالي</div><div className="stat-value">{fmtMoney(stats.total)}</div></div>
           <div className="stat-card"><div className="stat-label">✅ المحصل</div><div className="stat-value">{fmtMoney(stats.collected)}</div></div>
           <div className="stat-card"><div className="stat-label">⏳ المتبقي</div><div className="stat-value">{fmtMoney(stats.unpaid)}</div></div>
           <div className="stat-card"><div className="stat-label">🎁 مجاناً</div><div className="stat-value">{fmtMoney(stats.free)}</div></div>
-        </div>
-        
-        <div className="stats-grid">
           <div className="stat-card"><div className="stat-label">📋 منتهية</div><div className="stat-value">{fmtMoney(stats.completed)}</div></div>
           <div className="stat-card"><div className="stat-label">⚙️ قيد العمل</div><div className="stat-value">{fmtMoney(stats.inProgress)}</div></div>
           <div className="stat-card"><div className="stat-label">🔧 تصحيح</div><div className="stat-value">{fmtMoney(stats.correction)}</div></div>
           <div className="stat-card"><div className="stat-label">⚠️ Missed</div><div className="stat-value">{fmtMoney(stats.missed)}</div></div>
+          <div className="stat-card"><div className="stat-label">📊 عدد الحالات</div><div className="stat-value">{stats.count}</div></div>
         </div>
         
         <div className="toolbar">
           <div className="search-wrap">
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 بحث باسم المريض..." />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 بحث..." />
           </div>
         </div>
         
         {loading ? <Spinner /> : tabFiltered.length === 0 ? (
-          <div className="empty"><div className="empty-icon">📋</div><div className="empty-msg">{search ? `لا توجد حالات للمريض "${search}"` : "لا توجد حالات"}</div></div>
+          <div className="empty"><div className="empty-icon">📋</div><div className="empty-msg">لا توجد حالات</div></div>
         ) : (
           <div className="cases-grid">
             {tabFiltered.map((c, i) => {
@@ -1821,13 +1749,11 @@ export default function App() {
                       <BadgeDropdown c={c} type="payment" settings={settings} onPaymentChange={handleUpdatePayment} setToast={showToastMessage} />
                     </div>
                     <div className="case-footer">
-                      <div>
-                        <span className="case-amount">{fmtMoney(c.totalAmount)} ج.م</span>
-                        <span className="case-units">  {c.units} × {c.pricePerUnit}</span>
-                      </div>
-                      <div className="case-date">{fmtDate(c.startDate)}</div>
+                      <span className="case-amount">{fmtMoney(c.totalAmount)} ج.م</span>
+                      <span className="case-units">{c.units} × {c.pricePerUnit}</span>
+                      <span className="case-date">{fmtDate(c.startDate)}</span>
                     </div>
-                    {c.paymentStatus === "Partial" && <div style={{ fontSize: 9, color: "var(--mint)", marginTop: 4 }}>محصل: {fmtMoney(c.paidAmount)}</div>}
+                    {c.paymentStatus === "Partial" && <div style={{ fontSize: 8, color: "var(--mint)", marginTop: 3 }}>محصل: {fmtMoney(c.paidAmount)}</div>}
                   </div>
                 </div>
               );
