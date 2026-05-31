@@ -623,7 +623,7 @@ const toLocal = (r) => ({
   createdAt: r.created_at,
 });
 
-// دالة الاستيراد من Excel
+// ========== دالة الاستيراد المحسنة ==========
 async function importExcel(file, userId, currentBranch, setToast) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -633,59 +633,88 @@ async function importExcel(file, userId, currentBranch, setToast) {
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const rows = XLSX.utils.sheet_to_json(worksheet);
+        const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+        
+        if (!rows || rows.length === 0) {
+          reject(new Error("لا توجد بيانات في الملف"));
+          return;
+        }
+        
+        console.log("عدد الصفوف المستوردة:", rows.length);
+        console.log("أسماء الأعمدة:", Object.keys(rows[0]));
         
         let count = 0;
         for (const row of rows) {
+          const branchName = row["الفرع"] || currentBranch;
+          const patientName = row["المريض"] || "";
+          const materialName = row["المادة"] || "Zirconia";
+          const pricePerUnit = parseFloat(row["السعر"]) || 450;
+          const units = parseInt(row["الوحدات"]) || 1;
+          const caseStatus = row["الحالة"] || "In progress";
+          
           let paymentStatus = row["الدفع"] || "Unpaid";
           if (paymentStatus === "مدفوع" || paymentStatus === "مدفوع كامل") paymentStatus = "Paid";
           if (paymentStatus === "مجاناً") paymentStatus = "Free";
           if (paymentStatus.includes("مدفوع جزئي") || paymentStatus === "Partial") paymentStatus = "Partial";
           if (paymentStatus === "غير مدفوع") paymentStatus = "Unpaid";
           
+          const paidAmount = parseFloat(row["المحصل"]) || 0;
+          
           let startDate = todayISO();
+          let rawStartDate = row["البداية"] || "";
+          if (rawStartDate) {
+            let dateStr = String(rawStartDate);
+            if (dateStr.includes("-")) {
+              const parts = dateStr.split("-");
+              if (parts.length === 3) {
+                if (parts[0].length === 4) {
+                  startDate = `${parts[0]}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
+                } else if (parts[2].length === 4) {
+                  startDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+                }
+              }
+            }
+          }
+          
           let actionDate = null;
-          
-          if (row["البداية"]) {
-            let dateStr = String(row["البداية"]);
+          let rawActionDate = row["الإجراء"] || "";
+          if (rawActionDate) {
+            let dateStr = String(rawActionDate);
             if (dateStr.includes("-")) {
               const parts = dateStr.split("-");
-              if (parts.length === 3 && parts[0].length <= 2) {
-                startDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
-              } else if (parts.length === 3 && parts[0].length === 4) {
-                startDate = dateStr;
+              if (parts.length === 3) {
+                if (parts[0].length === 4) {
+                  actionDate = `${parts[0]}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
+                } else if (parts[2].length === 4) {
+                  actionDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+                }
               }
             }
           }
           
-          if (row["الإجراء"]) {
-            let dateStr = String(row["الإجراء"]);
-            if (dateStr.includes("-")) {
-              const parts = dateStr.split("-");
-              if (parts.length === 3 && parts[0].length <= 2) {
-                actionDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
-              }
-            }
-          }
+          const notes = row["ملاحظات"] || "";
+          
+          if (!patientName) continue;
           
           const rec = {
-            branchName: row["الفرع"] || currentBranch,
-            patientName: row["المريض"] || "",
-            materialName: row["المادة"] || "Zirconia",
-            pricePerUnit: parseFloat(row["السعر"]) || 450,
-            units: parseInt(row["الوحدات"]) || 1,
-            caseStatus: row["الحالة"] || "In progress",
+            branchName: branchName,
+            patientName: patientName,
+            materialName: materialName,
+            pricePerUnit: pricePerUnit,
+            units: units,
+            caseStatus: caseStatus,
             paymentStatus: paymentStatus,
-            paidAmount: parseFloat(row["المحصل"]) || 0,
+            paidAmount: paidAmount,
             startDate: startDate,
             actionDate: actionDate,
-            notes: row["ملاحظات"] || null,
+            notes: notes,
           };
           
-          if (!rec.patientName) continue;
           await insertCase(userId, rec);
           count++;
         }
+        
+        console.log(`تم استيراد ${count} حالة بنجاح`);
         resolve(count);
       } catch (err) {
         console.error("Import error:", err);
@@ -913,7 +942,7 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
   );
 }
 
-// ========== مكون القائمة المنسدلة المحسن للموبايل ==========
+// ========== مكون القائمة المنسدلة ==========
 function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, onPaymentChange, setToast }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
@@ -1323,7 +1352,7 @@ function SettingsScreen({ settings, onSave, onClose, setToast }) {
 }
 
 // نافذة الإحصائيات التفصيلية
-function StatsModal({ cases, statsDetail, onClose }) {
+function StatsModal({ cases, onClose }) {
   const totalCases = cases.length;
   const totalMoney = cases.reduce((sum, c) => sum + (c.totalAmount || 0), 0);
   const totalCollected = cases.reduce((sum, c) => sum + (c.paidAmount || 0), 0);
@@ -1682,7 +1711,7 @@ export default function App() {
   }, [cases, showToastMessage]);
 
   const handleCardClick = (c, e) => {
-    if (e.target.closest('.dropdown-container') || e.target.closest('.badge-clickable')) return;
+    if (e.target.closest('.dropdown-container') || e.target.closest('.badge')) return;
     setDetailCase(c);
   };
 
