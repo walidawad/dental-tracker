@@ -53,42 +53,6 @@ const DATE_RANGE = {
 const todayISO = () => new Date().toISOString().split("T")[0];
 const fmtMoney = (n) => Number(n || 0).toLocaleString("ar-EG");
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString("ar-EG", { day: "2-digit", month: "short", year: "numeric" }) : "—";
-const monthKey = (d) => d ? d.slice(0, 7) : "";
-
-const formatDateForExport = (dateStr) => {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  return `${d.getDate().toString().padStart(2, '0')}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getFullYear()}`;
-};
-
-function exportExcel(casesToExport, fileName = "dental_cases") {
-  const data = casesToExport.map(c => ({
-    "الفرع": c.branchName,
-    "المريض": c.patientName,
-    "المادة": c.materialName,
-    "السعر": c.pricePerUnit,
-    "الوحدات": c.units,
-    "الإجمالي": c.totalAmount,
-    "الحالة": c.caseStatus,
-    "الدفع": c.paymentStatus === "Paid" ? "مدفوع" : (c.paymentStatus === "Free" ? "مجاناً" : (c.paymentStatus === "Partial" ? "مدفوع جزئي" : "غير مدفوع")),
-    "المحصل": c.paidAmount || 0,
-    "المتبقي": (c.totalAmount - (c.paidAmount || 0)),
-    "البداية": formatDateForExport(c.startDate),
-    "الإجراء": formatDateForExport(c.actionDate),
-    "ملاحظات": c.notes || ""
-  }));
-
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  worksheet['!cols'] = [
-    { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 10 }, { wch: 10 },
-    { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 12 },
-    { wch: 12 }, { wch: 12 }, { wch: 30 }
-  ];
-  
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "الحالات");
-  XLSX.writeFile(workbook, `${fileName}_${todayISO()}.xlsx`);
-}
 
 const formatDateForExport = (dateStr) => {
   if (!dateStr) return "";
@@ -139,6 +103,7 @@ const CSS = `
   --border: rgba(255,255,255,0.07);
   --border2: rgba(255,255,255,0.12);
   --accent: #3D7EFF;
+  --accent2: #6C63FF;
   --gold: #F5A623;
   --mint: #00D4A1;
   --rose: #FF4D6D;
@@ -151,18 +116,42 @@ const CSS = `
   --r2: 5px;
 }
 
-html { direction: rtl; }
+html { direction: rtl; -webkit-text-size-adjust: 100%; }
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent2);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--surface2);
+}
 
 body {
   font-family: 'Tajawal', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
 }
-
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; } }
 @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
@@ -220,36 +209,18 @@ body {
   gap: 5px;
   white-space: nowrap;
 }
-.header-actions { display: flex; gap: 8px; align-items: center; }
+.header-actions { display: flex; gap: 5px; flex-wrap: wrap; }
 
-.branch-bar {
-  padding: 0 24px 12px;
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-}
-.branch-label { font-size: 11px; color: var(--text3); font-weight: 700; }
-.branch-select {
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: var(--r2);
-  color: var(--accent);
-  font-family: 'Tajawal', sans-serif;
-  font-size: 14px; font-weight: 700;
-  padding: 6px 12px;
-  outline: none; cursor: pointer;
-}
-.branch-select:focus { border-color: var(--accent); }
-
-.month-selector-wrapper {
-  padding: 8px 24px;
-  border-bottom: 1px solid var(--border);
+.filter-bar {
+  padding: 6px 10px;
   display: flex;
-  gap: 12px;
-  align-items: center;
+  gap: 10px;
   flex-wrap: wrap;
   align-items: center;
   border-bottom: 1px solid var(--border);
 }
-.year-select {
+.filter-label { font-size: 10px; color: var(--text3); font-weight: 700; }
+.filter-select {
   background: var(--surface2);
   border: 1px solid var(--border2);
   border-radius: var(--r2);
@@ -261,45 +232,27 @@ body {
   cursor: pointer;
 }
 
-.tabs {
-  display: flex; gap: 4px;
-  padding: 8px 24px;
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
+.main { 
+  padding: 8px; 
+  max-width: 700px; 
+  margin: 0 auto;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
-.tab {
-  padding: 7px 16px;
-  border-radius: 20px;
-  font-size: 12px; font-weight: 700;
-  border: 1px solid var(--border);
-  color: var(--text2);
-  cursor: pointer; white-space: nowrap;
-  background: transparent;
-  font-family: 'Tajawal', sans-serif;
-}
-.tab:hover { border-color: var(--accent); color: var(--accent); }
-.tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-
-.main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px; margin-bottom: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
 }
 .stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 16px;
-  position: relative; overflow: hidden;
-  animation: fadeUp .3s ease both;
-}
-.stat-card::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, var(--card-color, transparent) 0%, transparent 60%);
-  opacity: .06; pointer-events: none;
+  border-radius: 8px;
+  padding: 6px 3px;
+  text-align: center;
 }
 .stat-label {
   font-size: 8px;
@@ -315,8 +268,11 @@ body {
 }
 
 .toolbar {
-  display: flex; gap: 10px; align-items: center;
-  margin-bottom: 16px; flex-wrap: wrap;
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 .search-wrap {
   flex: 1;
@@ -333,12 +289,27 @@ body {
   font-size: 11px;
   outline: none;
 }
-.search-wrap input:focus { border-color: var(--accent); }
+.selection-mode-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 4px 8px;
+  font-size: 10px;
+  cursor: pointer;
+}
+.selection-mode-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
 
 .cases-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 .case-card {
   background: var(--surface);
@@ -357,37 +328,44 @@ body {
   background: var(--status-color, var(--border));
   border-radius: 0 var(--r) var(--r) 0;
 }
-.case-clickable-area {
+.case-checkbox {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
+  z-index: 5;
 }
-.case-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-.case-name { font-size: 15px; font-weight: 700; color: var(--text); }
-.case-date { font-size: 11px; color: var(--text3); margin-top: 2px; }
-.case-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; position: relative; }
-.case-footer { display: flex; justify-content: space-between; align-items: center; }
-.case-amount { font-size: 18px; font-weight: 800; }
-.case-units { font-size: 11px; color: var(--text3); }
-.case-branch { font-size: 11px; color: var(--text2); background: var(--surface2); padding: 3px 8px; border-radius: 20px; }
-
-.badge-clickable {
-  display: inline-flex;
+.case-content {
+  margin-left: 24px;
+}
+.case-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: all .15s;
-  border: 1px solid transparent;
-  position: relative;
+  margin-bottom: 5px;
 }
-.badge-clickable:hover {
-  transform: scale(1.02);
-  filter: brightness(1.1);
-  border-color: var(--accent);
+.case-name { font-size: 12px; font-weight: 700; word-break: break-word; }
+.case-date { font-size: 8px; color: var(--text3); }
+.case-badges {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin: 5px 0;
 }
+.case-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+}
+.case-amount { font-size: 12px; font-weight: 800; }
+.case-units { font-size: 8px; color: var(--text3); }
+.case-branch { font-size: 8px; color: var(--text2); background: var(--surface2); padding: 2px 5px; border-radius: 14px; }
+.case-teeth { font-size: 8px; color: var(--amber); margin-top: 3px; }
 
 .badge {
   display: inline-flex;
@@ -481,9 +459,10 @@ body {
 .modal {
   background: var(--surface);
   border: 1px solid var(--border2);
-  border-radius: 18px;
-  width: 100%; max-width: 560px;
-  max-height: 90vh;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
   overflow-y: auto;
 }
 .modal-header {
@@ -493,9 +472,9 @@ body {
   align-items: center;
   border-bottom: 1px solid var(--border);
 }
-.modal-title { font-size: 16px; font-weight: 800; }
-.modal-body { padding: 20px 24px; }
-.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+.modal-title { font-size: 14px; font-weight: 800; }
+.modal-body { padding: 12px 14px; }
+.modal-footer { padding: 8px 14px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
 
 .form-group { margin-bottom: 10px; }
 .form-label { display: block; font-size: 10px; font-weight: 700; color: var(--text2); margin-bottom: 3px; }
@@ -510,9 +489,42 @@ body {
   font-size: 11px;
   outline: none;
 }
-.form-input:focus { border-color: var(--accent); }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.form-textarea { min-height: 72px; resize: vertical; }
+.form-row { display: grid; grid-template-columns: 1fr; gap: 8px; }
+
+.dental-chart {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 10px;
+  margin: 10px 0;
+}
+.dental-teeth {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+.tooth-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-size: 9px;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.tooth-btn.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.selected-teeth {
+  margin-top: 8px;
+  font-size: 10px;
+  color: var(--text2);
+  word-break: break-word;
+}
 
 .total-preview {
   background: linear-gradient(135deg, rgba(61,126,255,.1), rgba(108,99,255,.08));
@@ -534,15 +546,11 @@ body {
   width: 100%;
   background: var(--surface);
   overflow-y: auto;
-  z-index: 151;
-  animation: slideIn .25s ease;
-  box-shadow: 8px 0 40px rgba(0,0,0,.5);
+  z-index: 1001;
+  animation: slideUp .25s ease;
+  scrollbar-width: thin;
 }
-@media (min-width: 640px) {
-  .drawer {
-    width: min(480px, 100vw);
-  }
-}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: none; } }
 .drawer-header {
   padding: 10px;
   border-bottom: 1px solid var(--border);
@@ -607,33 +615,27 @@ body {
 
 .divider { height: 1px; background: var(--border); margin: 10px 0; }
 
+@media (min-width: 640px) {
+  .stats-grid { grid-template-columns: repeat(5, 1fr); }
+  .drawer { width: min(320px, 100vw); }
+  .form-row { grid-template-columns: 1fr 1fr; }
+  .cases-grid {
+    max-height: 65vh;
+  }
+}
+
 @media (max-width: 640px) {
-  .main { padding: 14px; }
-  .stats-grid { grid-template-columns: 1fr 1fr; }
-  .cases-grid { grid-template-columns: 1fr; }
-  .form-row { grid-template-columns: 1fr; }
-  .month-selector-wrapper { flex-direction: column; align-items: flex-start; }
-  .badge-clickable { padding: 4px 8px; font-size: 11px; }
+  .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 5px; }
+  .stat-card { padding: 4px 2px; }
+  .stat-label { font-size: 7px; }
+  .stat-value { font-size: 10px; }
+  .cases-grid {
+    max-height: 55vh;
+  }
 }
 `;
 
-function Badge({ label, color, bg, icon }) {
-  return (
-    <span className="badge" style={{ color, background: bg, border: `1px solid ${color}30` }}>
-      {icon && <span>{icon}</span>}
-      {label}
-    </span>
-  );
-}
-
-function Toast({ msg }) {
-  return msg ? <div className="toast">{msg}</div> : null;
-}
-
-function Spinner() {
-  return <div className="loading"><div className="spinner" /><span>جاري التحميل...</span></div>;
-}
-
+// ========== دوال Supabase الأساسية ==========
 async function getSettings(userId) {
   const { data } = await supabase.from("settings").select("*").eq("user_id", userId).single();
   if (!data) {
@@ -734,20 +736,27 @@ async function importExcel(file, userId, currentBranch, setToast) {
         }
         
         let count = 0;
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i].trim();
-          if (!line) continue;
-          
-          const cols = line.match(/(".*?"|[^,]+)(?=,|$)/g);
-          if (!cols || cols.length < 5) continue;
-          
-          const clean = cols.map(c => c.replace(/^"|"$/g, "").trim());
+        let unknownStatuses = [];
+        
+        for (const row of rows) {
+          const branchName = row["الفرع"] || currentBranch;
+          const patientName = row["المريض"] || "";
+          const materialName = row["المادة"] || "Zirconia";
+          const pricePerUnit = parseFloat(row["السعر"]) || 450;
+          const units = parseInt(row["الوحدات"]) || 1;
+          const caseStatus = row["الحالة"] || "In progress";
           
           let paymentStatus = row["الدفع"] || "Unpaid";
           if (paymentStatus === "مدفوع" || paymentStatus === "مدفوع كامل") paymentStatus = "Paid";
-          if (paymentStatus === "مجاناً") paymentStatus = "Free";
-          if (paymentStatus.includes("مدفوع جزئي") || paymentStatus === "Partial") paymentStatus = "Partial";
-          if (paymentStatus === "غير مدفوع") paymentStatus = "Unpaid";
+          else if (paymentStatus === "مجاناً") paymentStatus = "Free";
+          else if (paymentStatus.includes("مدفوع جزئي") || paymentStatus === "Partial") paymentStatus = "Partial";
+          else if (paymentStatus === "غير مدفوع") paymentStatus = "Unpaid";
+          else if (!["Paid", "Unpaid", "Partial", "Free"].includes(paymentStatus)) {
+            unknownStatuses.push(patientName);
+            paymentStatus = "Unpaid";
+          }
+          
+          const paidAmount = parseFloat(row["المحصل"]) || 0;
           
           let startDate = todayISO();
           let rawStartDate = row["البداية"] || "";
@@ -766,15 +775,30 @@ async function importExcel(file, userId, currentBranch, setToast) {
           }
           
           let actionDate = null;
-          if (colIndex.actionDate >= 0 && clean[colIndex.actionDate]) {
-            let dateStr = clean[colIndex.actionDate];
-            if (dateStr.includes("/")) {
-              const parts = dateStr.split("/");
-              if (parts.length === 3) actionDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
-            } else if (dateStr.includes("-")) {
-              actionDate = dateStr;
+          let rawActionDate = row["الإجراء"] || "";
+          if (rawActionDate) {
+            let dateStr = String(rawActionDate);
+            if (dateStr.includes("-")) {
+              const parts = dateStr.split("-");
+              if (parts.length === 3) {
+                if (parts[0].length === 4) {
+                  actionDate = `${parts[0]}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
+                } else if (parts[2].length === 4) {
+                  actionDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+                }
+              }
             }
           }
+          
+          let teeth = [];
+          const teethStr = row["الأسنان"] || "";
+          if (teethStr) {
+            teeth = teethStr.split(",").map(t => t.trim()).filter(t => t);
+          }
+          
+          const notes = row["ملاحظات"] || "";
+          
+          if (!patientName) continue;
           
           const rec = {
             branchName: branchName,
@@ -784,7 +808,8 @@ async function importExcel(file, userId, currentBranch, setToast) {
             units: units,
             caseStatus: caseStatus,
             paymentStatus: paymentStatus,
-            paidAmount: (colIndex.paidAmount >= 0 && clean[colIndex.paidAmount]) ? parseFloat(clean[colIndex.paidAmount]) || 0 : 0,
+            paidAmount: paidAmount,
+            teeth: teeth,
             startDate: startDate,
             actionDate: actionDate,
             notes: notes,
@@ -792,6 +817,12 @@ async function importExcel(file, userId, currentBranch, setToast) {
           
           await insertCase(userId, rec);
           count++;
+        }
+        
+        if (unknownStatuses.length > 0) {
+          setToast(`⚠️ تم استيراد ${count} حالة. ${unknownStatuses.length} حالة كان لها حالة دفع غير معروفة وتم تعيينها كـ "غير مدفوع".`);
+        } else {
+          setToast(`✅ تم استيراد ${count} حالة بنجاح`);
         }
         resolve(count);
       } catch (err) {
@@ -983,7 +1014,7 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <span className="modal-title">{isEdit ? "✏️ تعديل" : "➕ حالة جديدة"}</span>
+          <span className="modal-title">{isEdit ? "✏️ تعديل الحالة" : "➕ حالة جديدة"}</span>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
@@ -1004,7 +1035,7 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
           <div className="form-group">
             <label className="form-label">المادة</label>
             <select className="form-input" value={form.materialName} onChange={e => handleMaterial(e.target.value)}>
-              {settings.materials.map(m => (
+              {activeMaterials.map(m => (
                 <option key={m.id} value={m.name}>{m.name}{m.price ? ` — ${m.price} ج.م` : " — سعر حر"}</option>
               ))}
             </select>
@@ -1021,15 +1052,17 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">الحالة</label>
+              <label className="form-label">حالة الكيس</label>
               <select className="form-input" value={form.caseStatus} onChange={e => handleStatus(e.target.value)}>
-                {settings.caseStatuses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                {settings.caseStatuses.map(s => (
+                  <option key={s.id} value={s.name}>{STATUS_META[s.name]?.icon} {s.name}</option>
+                ))}
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">الدفع</label>
+              <label className="form-label">حالة الدفع</label>
               <select className="form-input" value={form.paymentStatus} onChange={e => setForm(f => ({ ...f, paymentStatus: e.target.value }))}>
-                {settings.paymentStatuses.map(s => <option key={s.id} value={s.name}>{s.name === "Paid" ? "مدفوع كامل" : (s.name === "Free" ? "مجاناً" : (s.name === "Partial" ? "مدفوع جزئي" : "غير مدفوع"))}</option>)}
+                {activePaymentStatuses.map(s => <option key={s.id} value={s.name}>{s.display || s.name}</option>)}
               </select>
             </div>
           </div>
@@ -1054,8 +1087,8 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">ملاحظات إكلينيكية</label>
-            <textarea className="form-input form-textarea" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="أي تفاصيل إضافية عن الحالة..." />
+            <label className="form-label">ملاحظات</label>
+            <textarea className="form-input form-textarea" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="أي تفاصيل إضافية..." rows="2" />
           </div>
         </div>
         <div className="modal-footer">
@@ -1069,16 +1102,124 @@ function CaseModal({ existing, settings, defaultBranch, onSave, onClose }) {
   );
 }
 
-function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose }) {
+function BadgeDropdown({ c, type, settings, onStatusChange, onMaterialChange, onPaymentChange, setToast }) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const badgeRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  const openDropdown = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const spaceBelow = windowHeight - rect.bottom;
+    const dropdownHeight = 200;
+    
+    let top = rect.bottom + 5;
+    if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+      top = rect.top - dropdownHeight - 5;
+    }
+    setDropdownPosition({ top: top, left: rect.left });
+    setDropdownOpen(true);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
+          badgeRef.current && !badgeRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener("touchstart", handleClickOutside);
+      };
+    }
+  }, [dropdownOpen]);
+
+  if (type === 'status') {
+    const sm = STATUS_META[c.caseStatus] || {};
+    return (
+      <div className="dropdown-container">
+        <span ref={badgeRef} className="badge" style={{ color: sm.color, background: sm.bg, border: `1px solid ${sm.color}30`, cursor: 'pointer' }} onClick={openDropdown}>
+          {sm.icon} {c.caseStatus} ▼
+        </span>
+        {dropdownOpen && (
+          <div ref={dropdownRef} className="dropdown-menu" style={{ position: 'fixed', top: dropdownPosition.top, left: dropdownPosition.left, zIndex: 9999 }}>
+            {settings.caseStatuses.map(s => (
+              <div key={s.id} className="dropdown-item" onClick={(e) => { e.stopPropagation(); onStatusChange(c, s.name); setDropdownOpen(false); }}>
+                {STATUS_META[s.name]?.icon} {s.name}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (type === 'material') {
+    const mc = MAT_COLORS[c.materialName] || "var(--mint)";
+    const activeMaterials = settings.materials.filter(m => m.active !== false);
+    return (
+      <div className="dropdown-container">
+        <span ref={badgeRef} className="badge" style={{ color: mc, background: mc + "20", cursor: 'pointer' }} onClick={openDropdown}>
+          {c.materialName} ▼
+        </span>
+        {dropdownOpen && (
+          <div ref={dropdownRef} className="dropdown-menu" style={{ position: 'fixed', top: dropdownPosition.top, left: dropdownPosition.left, zIndex: 9999 }}>
+            {activeMaterials.map(m => (
+              <div key={m.id} className="dropdown-item" onClick={(e) => { e.stopPropagation(); onMaterialChange(c, m.name); setDropdownOpen(false); }}>
+                {m.name} {m.price ? `(${m.price})` : ''}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (type === 'payment') {
+    const activePaymentStatuses = settings.paymentStatuses.filter(p => p.active !== false);
+    const getPaymentDisplay = (status) => {
+      const ps = activePaymentStatuses.find(p => p.name === status);
+      return ps ? (ps.display || ps.name) : status;
+    };
+    const paymentColor = c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)"));
+    const paymentBg = c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : (c.paymentStatus === "Partial" ? "rgba(155,142,255,.12)" : "rgba(239,68,68,.12)"));
+    
+    return (
+      <div className="dropdown-container">
+        <span ref={badgeRef} className="badge" style={{ color: paymentColor, background: paymentBg, border: `1px solid ${paymentColor}30`, cursor: 'pointer' }} onClick={openDropdown}>
+          {getPaymentDisplay(c.paymentStatus)} ▼
+        </span>
+        {dropdownOpen && (
+          <div ref={dropdownRef} className="dropdown-menu" style={{ position: 'fixed', top: dropdownPosition.top, left: dropdownPosition.left, zIndex: 9999 }}>
+            {activePaymentStatuses.map(s => (
+              <div key={s.id} className="dropdown-item" onClick={(e) => { e.stopPropagation(); onPaymentChange(c, s.name); setDropdownOpen(false); }}>
+                {s.icon} {s.display || s.name}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+  return null;
+}
+
+function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose, setToast }) {
   const sm = STATUS_META[c.caseStatus] || {};
   const mc = MAT_COLORS[c.materialName] || "var(--mint)";
   const remaining = (c.totalAmount || 0) - (c.paidAmount || 0);
-  
-  const getPaymentLabel = (status) => {
-    if (status === "Paid") return "مدفوع كامل";
-    if (status === "Free") return "مجاناً";
-    if (status === "Partial") return `مدفوع جزئي (${fmtMoney(c.paidAmount)} ج.م)`;
-    return "غير مدفوع";
+  const activePaymentStatuses = settings.paymentStatuses.filter(p => p.active !== false);
+  const getPaymentDisplay = (status) => {
+    const ps = activePaymentStatuses.find(p => p.name === status);
+    return ps ? (ps.display || ps.name) : status;
   };
 
   return (
@@ -1091,11 +1232,7 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose })
             <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 5 }}>
               <Badge label={c.caseStatus} color={sm.color} bg={sm.bg} icon={sm.icon} />
               <Badge label={c.materialName} color={mc} bg={mc + "20"} />
-              <Badge 
-                label={getPaymentLabel(c.paymentStatus)} 
-                color={c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : (c.paymentStatus === "Partial" ? "var(--lavender)" : "var(--rose)"))} 
-                bg={c.paymentStatus === "Paid" ? "rgba(0,212,161,.12)" : (c.paymentStatus === "Free" ? "rgba(245,166,35,.12)" : (c.paymentStatus === "Partial" ? "rgba(155,142,255,.12)" : "rgba(239,68,68,.12)"))} 
-              />
+              <Badge label={getPaymentDisplay(c.paymentStatus)} color={c.paymentStatus === "Paid" ? "var(--mint)" : (c.paymentStatus === "Free" ? "var(--amber)" : "var(--rose)")} />
             </div>
           </div>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
@@ -1122,21 +1259,14 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose })
           </div>
           <div className="drawer-section">
             <div className="drawer-section-title">التفاصيل</div>
-            {[
-              ["الفرع", c.branchName],
-              ["تاريخ البداية", fmtDate(c.startDate)],
-              ["تاريخ الإجراء", fmtDate(c.actionDate)],
-              ["تاريخ الإضافة", fmtDate(c.createdAt)],
-            ].map(([k, v]) => (
-              <div key={k} className="detail-row">
-                <span className="detail-key">{k}</span>
-                <span className="detail-val">{v}</span>
-              </div>
-            ))}
+            <div className="detail-row"><span className="detail-key">الفرع</span><span className="detail-val">{c.branchName}</span></div>
+            <div className="detail-row"><span className="detail-key">تاريخ البداية</span><span className="detail-val">{fmtDate(c.startDate)}</span></div>
+            <div className="detail-row"><span className="detail-key">تاريخ الإجراء</span><span className="detail-val">{fmtDate(c.actionDate)}</span></div>
+            {c.teeth && c.teeth.length > 0 && (
+              <div className="detail-row"><span className="detail-key">الأسنان</span><span className="detail-val">{c.teeth.join(", ")}</span></div>
+            )}
             {c.notes && (
-              <div style={{ marginTop: 10, padding: "10px 12px", background: "var(--surface2)", borderRadius: 8, fontSize: 13, color: "var(--text2)" }}>
-                📝 {c.notes}
-              </div>
+              <div className="detail-row"><span className="detail-key">ملاحظات</span><span className="detail-val">{c.notes}</span></div>
             )}
           </div>
           <div style={{ display: "flex", gap: 5, flexDirection: "column" }}>
@@ -1149,12 +1279,16 @@ function CaseDrawer({ c, settings, onEdit, onDelete, onUpdatePayment, onClose })
   );
 }
 
-function SettingsScreen({ settings, onSave, onClose }) {
+function SettingsScreen({ settings, onSave, onClose, setToast, cases }) {
   const [s, setS] = useState(JSON.parse(JSON.stringify(settings)));
   const [loading, setLoading] = useState(false);
   const [newBranch, setNewBranch] = useState("");
   const [newMaterial, setNewMaterial] = useState({ name: "", price: "" });
   const [editingMaterial, setEditingMaterial] = useState(null);
+  const [newPaymentStatus, setNewPaymentStatus] = useState({ name: "", display: "", icon: "" });
+  const [editingPaymentStatus, setEditingPaymentStatus] = useState(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [updatingPassword, setUpdatingPassword] = useState(false);
 
   function addBranch() {
     const b = newBranch.trim();
@@ -1189,10 +1323,10 @@ function SettingsScreen({ settings, onSave, onClose }) {
     setEditingMaterial(null);
   }
 
-  function deleteMaterial(id) {
-    if (s.materials.length <= 1) {
-      alert("لا يمكن حذف المادة الوحيدة");
-      return;
+  function hideMaterial(id, name) {
+    const usageCount = cases.filter(c => c.materialName === name).length;
+    if (usageCount > 0) {
+      setToast(`⚠️ المادة "${name}" مستخدمة في ${usageCount} حالة. سيتم إخفاؤها من القائمة بدلاً من حذفها.`);
     }
     setS(prev => ({
       ...prev,
@@ -1200,6 +1334,80 @@ function SettingsScreen({ settings, onSave, onClose }) {
         m.id === id ? { ...m, active: false } : m
       )
     }));
+  }
+
+  function showMaterial(id) {
+    setS(prev => ({
+      ...prev,
+      materials: prev.materials.map(m =>
+        m.id === id ? { ...m, active: true } : m
+      )
+    }));
+  }
+
+  function addPaymentStatus() {
+    const name = newPaymentStatus.name.trim();
+    if (!name || s.paymentStatuses.some(p => p.name === name)) return;
+    const newId = `ps_${Date.now()}`;
+    setS(prev => ({
+      ...prev,
+      paymentStatuses: [...prev.paymentStatuses, { 
+        id: newId, 
+        name, 
+        display: newPaymentStatus.display || name, 
+        icon: newPaymentStatus.icon || "💰", 
+        active: true 
+      }]
+    }));
+    setNewPaymentStatus({ name: "", display: "", icon: "" });
+  }
+
+  function updatePaymentStatus(id, field, value) {
+    setS(prev => ({
+      ...prev,
+      paymentStatuses: prev.paymentStatuses.map(p =>
+        p.id === id ? { ...p, [field]: value } : p
+      )
+    }));
+    setEditingPaymentStatus(null);
+  }
+
+  function hidePaymentStatus(id, name) {
+    const usageCount = cases.filter(c => c.paymentStatus === name).length;
+    if (usageCount > 0) {
+      setToast(`⚠️ حالة الدفع "${name}" مستخدمة في ${usageCount} حالة. سيتم إخفاؤها من القائمة بدلاً من حذفها.`);
+    }
+    setS(prev => ({
+      ...prev,
+      paymentStatuses: prev.paymentStatuses.map(p =>
+        p.id === id ? { ...p, active: false } : p
+      )
+    }));
+  }
+
+  function showPaymentStatus(id) {
+    setS(prev => ({
+      ...prev,
+      paymentStatuses: prev.paymentStatuses.map(p =>
+        p.id === id ? { ...p, active: true } : p
+      )
+    }));
+  }
+
+  async function handleUpdatePassword() {
+    if (!newPassword.trim()) {
+      setToast("الرجاء إدخال كلمة مرور جديدة");
+      return;
+    }
+    setUpdatingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setUpdatingPassword(false);
+    if (error) {
+      setToast("❌ خطأ: " + error.message);
+    } else {
+      setToast("✅ تم تحديث كلمة المرور!");
+      setNewPassword("");
+    }
   }
 
   async function save() {
@@ -1211,7 +1419,7 @@ function SettingsScreen({ settings, onSave, onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 680 }} onClick={e => e.stopPropagation()}>
+      <div className="modal" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <span className="modal-title">⚙️ الإعدادات</span>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
@@ -1237,9 +1445,9 @@ function SettingsScreen({ settings, onSave, onClose }) {
                 {s.branches.length > 1 && <button className="btn btn-danger btn-sm" onClick={() => delBranch(b)}>حذف</button>}
               </div>
             ))}
-            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-              <input className="form-input" value={newBranch} onChange={e => setNewBranch(e.target.value)} placeholder="اسم الفرع الجديد" onKeyDown={e => e.key === "Enter" && addBranch()} />
-              <button className="btn btn-primary" onClick={addBranch}>إضافة فرع</button>
+            <div style={{ display: "flex", gap: 5, marginTop: 5 }}>
+              <input className="form-input" value={newBranch} onChange={e => setNewBranch(e.target.value)} placeholder="فرع جديد" onKeyDown={e => e.key === "Enter" && addBranch()} />
+              <button className="btn btn-primary btn-sm" onClick={addBranch}>إضافة</button>
             </div>
           </div>
           
@@ -1251,7 +1459,7 @@ function SettingsScreen({ settings, onSave, onClose }) {
             {s.materials.map(m => (
               <div key={m.id} className="settings-list-item" style={{ opacity: m.active === false ? 0.5 : 1 }}>
                 <div>
-                  <div className="settings-list-item-name" style={{ color: MAT_COLORS[m.name] || "var(--accent)" }}>{m.name}</div>
+                  <div className="settings-list-item-name">{m.name} {m.active === false && "(مخفية)"}</div>
                   <div className="settings-list-item-sub">
                     {editingMaterial === m.id ? (
                       <input className="form-input" type="number" defaultValue={m.price ?? ""} style={{ width: 80, padding: "2px 5px", fontSize: 10 }} onBlur={(e) => updateMaterialPrice(m.id, e.target.value)} onKeyDown={(e) => e.key === "Enter" && updateMaterialPrice(m.id, e.target.value)} autoFocus />
@@ -1260,18 +1468,58 @@ function SettingsScreen({ settings, onSave, onClose }) {
                     )}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 6 }}>
-                  {m.price !== null && (
-                    <button className="btn btn-ghost btn-sm" onClick={() => setEditingMaterial(m.id)}>تعديل السعر</button>
+                <div style={{ display: "flex", gap: 3 }}>
+                  {m.price !== null && <button className="btn btn-ghost btn-sm" onClick={() => setEditingMaterial(m.id)}>تعديل</button>}
+                  {m.active !== false ? (
+                    <button className="btn btn-danger btn-sm" onClick={() => hideMaterial(m.id, m.name)}>إخفاء</button>
+                  ) : (
+                    <button className="btn btn-primary btn-sm" onClick={() => showMaterial(m.id)}>إظهار</button>
                   )}
-                  <button className="btn btn-danger btn-sm" onClick={() => deleteMaterial(m.id)}>حذف</button>
                 </div>
               </div>
             ))}
-            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-              <input className="form-input" value={newMaterial.name} onChange={e => setNewMaterial({ ...newMaterial, name: e.target.value })} placeholder="اسم المادة الجديدة" style={{ flex: 2 }} />
-              <input className="form-input" type="number" value={newMaterial.price} onChange={e => setNewMaterial({ ...newMaterial, price: e.target.value })} placeholder="السعر (اتركه فارغاً لسعر حر)" style={{ flex: 1 }} />
-              <button className="btn btn-primary" onClick={addMaterial}>➕ إضافة مادة</button>
+            <div style={{ display: "flex", gap: 5, marginTop: 6 }}>
+              <input className="form-input" value={newMaterial.name} onChange={e => setNewMaterial({ ...newMaterial, name: e.target.value })} placeholder="مادة جديدة" style={{ flex: 2 }} />
+              <input className="form-input" type="number" value={newMaterial.price} onChange={e => setNewMaterial({ ...newMaterial, price: e.target.value })} placeholder="السعر" style={{ flex: 1 }} />
+              <button className="btn btn-primary btn-sm" onClick={addMaterial}>➕</button>
+            </div>
+          </div>
+          
+          <div className="divider" />
+          
+          <div className="settings-section">
+            <div className="settings-section-title">💵 حالات الدفع</div>
+            <div style={{ fontSize: 9, color: "var(--text3)", marginBottom: 5 }}>⚠️ التغييرات لا تؤثر على الحالات القديمة</div>
+            {s.paymentStatuses.map(p => (
+              <div key={p.id} className="settings-list-item" style={{ opacity: p.active === false ? 0.5 : 1 }}>
+                <div>
+                  <div className="settings-list-item-name">{p.name} {p.active === false && "(مخفية)"}</div>
+                  <div className="settings-list-item-sub">
+                    {editingPaymentStatus === p.id ? (
+                      <div style={{ display: "flex", gap: 3 }}>
+                        <input className="form-input" defaultValue={p.display || p.name} style={{ width: 80, padding: "2px 5px", fontSize: 10 }} onBlur={(e) => updatePaymentStatus(p.id, "display", e.target.value)} />
+                        <input className="form-input" defaultValue={p.icon || "💰"} style={{ width: 40, padding: "2px 5px", fontSize: 10 }} onBlur={(e) => updatePaymentStatus(p.id, "icon", e.target.value)} />
+                      </div>
+                    ) : (
+                      `${p.icon} ${p.display || p.name}`
+                    )}
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 3 }}>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setEditingPaymentStatus(p.id)}>تعديل</button>
+                  {p.active !== false ? (
+                    <button className="btn btn-danger btn-sm" onClick={() => hidePaymentStatus(p.id, p.name)}>إخفاء</button>
+                  ) : (
+                    <button className="btn btn-primary btn-sm" onClick={() => showPaymentStatus(p.id)}>إظهار</button>
+                  )}
+                </div>
+              </div>
+            ))}
+            <div style={{ display: "flex", gap: 5, marginTop: 6, flexWrap: "wrap" }}>
+              <input className="form-input" value={newPaymentStatus.name} onChange={e => setNewPaymentStatus({ ...newPaymentStatus, name: e.target.value })} placeholder="الاسم (مثل: Pending)" style={{ flex: 1 }} />
+              <input className="form-input" value={newPaymentStatus.display} onChange={e => setNewPaymentStatus({ ...newPaymentStatus, display: e.target.value })} placeholder="العرض (مثل: قيد الانتظار)" style={{ flex: 1 }} />
+              <input className="form-input" value={newPaymentStatus.icon} onChange={e => setNewPaymentStatus({ ...newPaymentStatus, icon: e.target.value })} placeholder="رمز" style={{ width: 50 }} />
+              <button className="btn btn-primary btn-sm" onClick={addPaymentStatus}>➕</button>
             </div>
           </div>
         </div>
@@ -1284,6 +1532,232 @@ function SettingsScreen({ settings, onSave, onClose }) {
   );
 }
 
+function ColumnSelectorModal({ columns, selectedColumns, onToggle, onConfirm, onCancel }) {
+  return (
+    <div className="modal-overlay" onClick={onCancel}>
+      <div className="modal" style={{ maxWidth: 400 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span className="modal-title">📋 اختيار الأعمدة للعرض</span>
+          <button className="btn btn-ghost btn-icon" onClick={onCancel}>✕</button>
+        </div>
+        <div className="modal-body">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+            {columns.map(col => (
+              <label key={col.key} style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px" }}>
+                <input type="checkbox" checked={selectedColumns.includes(col.key)} onChange={() => onToggle(col.key)} />
+                {col.label}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-ghost" onClick={onCancel}>إلغاء</button>
+          <button className="btn btn-primary" onClick={onConfirm}>تأكيد</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReportModal({ cases, selectedColumns, onClose, onExport }) {
+  const formatDate = (d) => d ? new Date(d).toLocaleDateString("ar-EG") : "";
+  
+  const getPaymentDisplay = (status) => {
+    const ps = DEFAULT_SETTINGS.paymentStatuses.find(p => p.name === status);
+    return ps ? (ps.display || ps.name) : status;
+  };
+  
+  const totalAmount = cases.reduce((sum, c) => sum + (c.totalAmount || 0), 0);
+  const totalCollected = cases.reduce((sum, c) => sum + (c.paidAmount || 0), 0);
+  
+  const exportToExcel = () => {
+    const data = cases.map(c => {
+      const row = {};
+      if (selectedColumns.includes("branch")) row["الفرع"] = c.branchName;
+      if (selectedColumns.includes("patient")) row["المريض"] = c.patientName;
+      if (selectedColumns.includes("material")) row["المادة"] = c.materialName;
+      if (selectedColumns.includes("price")) row["السعر"] = c.pricePerUnit;
+      if (selectedColumns.includes("units")) row["الوحدات"] = c.units;
+      if (selectedColumns.includes("total")) row["الإجمالي"] = c.totalAmount;
+      if (selectedColumns.includes("status")) row["الحالة"] = c.caseStatus;
+      if (selectedColumns.includes("payment")) row["الدفع"] = getPaymentDisplay(c.paymentStatus);
+      if (selectedColumns.includes("collected")) row["المحصل"] = c.paidAmount || 0;
+      if (selectedColumns.includes("remaining")) row["المتبقي"] = (c.totalAmount - (c.paidAmount || 0));
+      if (selectedColumns.includes("startDate")) row["البداية"] = formatDate(c.startDate);
+      if (selectedColumns.includes("actionDate")) row["الإجراء"] = formatDate(c.actionDate);
+      if (selectedColumns.includes("createdAt")) row["تاريخ الإضافة"] = formatDate(c.createdAt);
+      if (selectedColumns.includes("teeth")) row["الأسنان"] = c.teeth ? c.teeth.join(", ") : "";
+      if (selectedColumns.includes("notes")) row["ملاحظات"] = c.notes || "";
+      return row;
+    });
+    
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "التقرير");
+    XLSX.writeFile(workbook, `تقرير_الحالات_${todayISO()}.xlsx`);
+    onExport();
+  };
+  
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{ maxWidth: "90vw", width: 800 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span className="modal-title">📋 تقرير الحالات المختارة ({cases.length} حالة)</span>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body" style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px", direction: "rtl" }}>
+            <thead>
+              <tr>
+                {selectedColumns.includes("patient") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>المريض</th>}
+                {selectedColumns.includes("branch") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>الفرع</th>}
+                {selectedColumns.includes("material") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>المادة</th>}
+                {selectedColumns.includes("price") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>السعر</th>}
+                {selectedColumns.includes("units") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>الوحدات</th>}
+                {selectedColumns.includes("total") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>الإجمالي</th>}
+                {selectedColumns.includes("status") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>الحالة</th>}
+                {selectedColumns.includes("payment") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>الدفع</th>}
+                {selectedColumns.includes("collected") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>المحصل</th>}
+                {selectedColumns.includes("remaining") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>المتبقي</th>}
+                {selectedColumns.includes("startDate") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>البداية</th>}
+                {selectedColumns.includes("actionDate") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>الإجراء</th>}
+                {selectedColumns.includes("createdAt") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>تاريخ الإضافة</th>}
+                {selectedColumns.includes("teeth") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>الأسنان</th>}
+                {selectedColumns.includes("notes") && <th style={{ border: "1px solid var(--border)", padding: "6px", textAlign: "center" }}>ملاحظات</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {cases.map((c, idx) => (
+                <tr key={idx}>
+                  {selectedColumns.includes("patient") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{c.patientName}</td>}
+                  {selectedColumns.includes("branch") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{c.branchName}</td>}
+                  {selectedColumns.includes("material") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{c.materialName}</td>}
+                  {selectedColumns.includes("price") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{c.pricePerUnit}</td>}
+                  {selectedColumns.includes("units") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{c.units}</td>}
+                  {selectedColumns.includes("total") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{fmtMoney(c.totalAmount)}</td>}
+                  {selectedColumns.includes("status") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{c.caseStatus}</td>}
+                  {selectedColumns.includes("payment") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{getPaymentDisplay(c.paymentStatus)}</td>}
+                  {selectedColumns.includes("collected") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{fmtMoney(c.paidAmount || 0)}</td>}
+                  {selectedColumns.includes("remaining") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{fmtMoney((c.totalAmount - (c.paidAmount || 0)))}</td>}
+                  {selectedColumns.includes("startDate") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{formatDate(c.startDate)}</td>}
+                  {selectedColumns.includes("actionDate") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{formatDate(c.actionDate)}</td>}
+                  {selectedColumns.includes("createdAt") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{formatDate(c.createdAt)}</td>}
+                  {selectedColumns.includes("teeth") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{c.teeth ? c.teeth.join(", ") : ""}</td>}
+                  {selectedColumns.includes("notes") && <td style={{ border: "1px solid var(--border)", padding: "4px" }}>{c.notes || ""}</td>}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="divider" />
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", marginTop: "10px" }}>
+            <span>💰 إجمالي المبالغ: {fmtMoney(totalAmount)} ج.م</span>
+            <span>✅ إجمالي المحصل: {fmtMoney(totalCollected)} ج.م</span>
+            <span>⏳ إجمالي المتبقي: {fmtMoney(totalAmount - totalCollected)} ج.م</span>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-ghost" onClick={onClose}>إغلاق</button>
+          <button className="btn btn-primary" onClick={exportToExcel}>📤 تصدير Excel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatsModal({ cases, onClose }) {
+  const totalCases = cases.length;
+  const totalMoney = cases.reduce((sum, c) => sum + (c.totalAmount || 0), 0);
+  const totalCollected = cases.reduce((sum, c) => sum + (c.paidAmount || 0), 0);
+  const totalFree = cases.filter(c => c.paymentStatus === "Free").reduce((sum, c) => sum + (c.totalAmount || 0), 0);
+  const completedCases = cases.filter(c => c.caseStatus === "Completed").length;
+  const inProgressCases = cases.filter(c => c.caseStatus === "In progress").length;
+  const correctionCases = cases.filter(c => c.caseStatus === "Correction").length;
+  const missedCases = cases.filter(c => c.caseStatus === "Missed").length;
+  const tempCementCases = cases.filter(c => c.caseStatus === "Temp cement").length;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{ maxWidth: 350 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span className="modal-title">📊 الإحصائيات</span>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <div className="detail-row"><span className="detail-key">إجمالي الحالات</span><span className="detail-val">{totalCases}</span></div>
+          <div className="detail-row"><span className="detail-key">إجمالي المبالغ</span><span className="detail-val">{fmtMoney(totalMoney)} ج.م</span></div>
+          <div className="detail-row"><span className="detail-key">المحصل</span><span className="detail-val">{fmtMoney(totalCollected)} ج.م</span></div>
+          <div className="detail-row"><span className="detail-key">المتبقي</span><span className="detail-val">{fmtMoney(totalMoney - totalCollected)} ج.م</span></div>
+          <div className="detail-row"><span className="detail-key">مجاناً</span><span className="detail-val">{fmtMoney(totalFree)} ج.م</span></div>
+          <div className="divider" />
+          <div className="detail-row"><span className="detail-key">✅ منتهية</span><span className="detail-val">{completedCases}</span></div>
+          <div className="detail-row"><span className="detail-key">⚙️ قيد العمل</span><span className="detail-val">{inProgressCases}</span></div>
+          <div className="detail-row"><span className="detail-key">🔧 تصحيح</span><span className="detail-val">{correctionCases}</span></div>
+          <div className="detail-row"><span className="detail-key">⚠️ Missed</span><span className="detail-val">{missedCases}</span></div>
+          <div className="detail-row"><span className="detail-key">🔩 Temp cement</span><span className="detail-val">{tempCementCases}</span></div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-primary" onClick={onClose}>إغلاق</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RangeExportModal({ onClose, onExport }) {
+  const [startDate, setStartDate] = useState(todayISO());
+  const [endDate, setEndDate] = useState(todayISO());
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{ maxWidth: 350 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span className="modal-title">📆 تصدير نطاق زمني</span>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <div className="form-group">
+            <label className="form-label">من تاريخ</label>
+            <input className="form-input" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">إلى تاريخ</label>
+            <input className="form-input" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-ghost" onClick={onClose}>إلغاء</button>
+          <button className="btn btn-primary" onClick={() => { onExport(startDate, endDate); onClose(); }}>تصدير</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExportDropdown({ onExportAll, onExportCurrent, onExportRange, onClose }) {
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) onClose();
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [onClose]);
+
+  return (
+    <div ref={dropdownRef} className="dropdown-menu" style={{ position: 'fixed', top: 45, left: 'auto', right: 50, zIndex: 9999 }}>
+      <div className="dropdown-item" onClick={() => { onExportAll(); onClose(); }}>📤 الكل</div>
+      <div className="dropdown-item" onClick={() => { onExportCurrent(); onClose(); }}>📅 الشهر الحالي</div>
+      <div className="dropdown-item" onClick={() => { onExportRange(); onClose(); }}>📆 نطاق زمني</div>
+    </div>
+  );
+}
+
+// ========== MAIN APP ==========
 export default function App() {
   const [session, setSession] = useState(null);
   const [authInit, setAuthInit] = useState(false);
@@ -1297,8 +1771,6 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState("all");
   
   const [search, setSearch] = useState("");
-  const [selectedYear, setSelectedYear] = useState(2026);
-  const [selectedMonth, setSelectedMonth] = useState(5);
   const [showAdd, setShowAdd] = useState(false);
   const [editCase, setEditCase] = useState(null);
   const [detailCase, setDetailCase] = useState(null);
@@ -1307,8 +1779,34 @@ export default function App() {
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [showRangeExport, setShowRangeExport] = useState(false);
   const [toast, setToast] = useState("");
-  const [dropdownState, setDropdownState] = useState({ caseId: null, type: null, x: 0, y: 0 });
+  
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedCases, setSelectedCases] = useState([]);
+  const [showColumnSelector, setShowColumnSelector] = useState(false);
+  const [reportColumns, setReportColumns] = useState(["patient", "branch", "material", "total", "status", "payment", "startDate", "actionDate", "teeth", "notes"]);
+  const [reportData, setReportData] = useState([]);
+  const [showReport, setShowReport] = useState(false);
+  
   const importRef = useRef();
+  let toastTimeout = useRef(null);
+
+  const availableColumns = [
+    { key: "patient", label: "المريض" },
+    { key: "branch", label: "الفرع" },
+    { key: "material", label: "المادة" },
+    { key: "price", label: "السعر" },
+    { key: "units", label: "الوحدات" },
+    { key: "total", label: "الإجمالي" },
+    { key: "status", label: "الحالة" },
+    { key: "payment", label: "الدفع" },
+    { key: "collected", label: "المحصل" },
+    { key: "remaining", label: "المتبقي" },
+    { key: "startDate", label: "تاريخ البداية" },
+    { key: "actionDate", label: "تاريخ الإجراء" },
+    { key: "createdAt", label: "تاريخ الإضافة" },
+    { key: "teeth", label: "الأسنان" },
+    { key: "notes", label: "ملاحظات" },
+  ];
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -1352,66 +1850,65 @@ export default function App() {
   const patientSearchFiltered = useMemo(() => {
     if (!search.trim()) return cases;
     const q = search.toLowerCase().trim();
-    return branchFiltered.filter(c => c.patientName.toLowerCase().includes(q));
-  }, [branchFiltered, search]);
+    return cases.filter(c => c.patientName.toLowerCase().includes(q));
+  }, [cases, search]);
+
+  const branchFiltered = useMemo(() => 
+    activeBranch === "all" ? patientSearchFiltered : patientSearchFiltered.filter(c => c.branchName === activeBranch),
+    [patientSearchFiltered, activeBranch]
+  );
+
+  const dateFiltered = useMemo(() => {
+    if (selectedYear === "all") return branchFiltered;
+    let filtered = branchFiltered.filter(c => {
+      const d = c.actionDate || c.startDate || c.createdAt;
+      return d && new Date(d).getFullYear() === selectedYear;
+    });
+    if (selectedMonth !== "all") {
+      filtered = filtered.filter(c => {
+        const d = c.actionDate || c.startDate || c.createdAt;
+        return d && new Date(d).getMonth() + 1 === selectedMonth;
+      });
+    }
+    return filtered;
+  }, [branchFiltered, selectedYear, selectedMonth]);
+
+  const tabFiltered = useMemo(() => {
+    if (statusFilter === "all") return dateFiltered;
+    if (statusFilter === "active") {
+      return dateFiltered.filter(c => c.caseStatus === "In progress" || c.caseStatus === "Correction");
+    }
+    if (statusFilter === "completed") {
+      return dateFiltered.filter(c => c.caseStatus === "Completed");
+    }
+    if (statusFilter === "missed") {
+      return dateFiltered.filter(c => c.caseStatus === "Missed");
+    }
+    if (statusFilter === "temp") {
+      return dateFiltered.filter(c => c.caseStatus === "Temp cement");
+    }
+    return dateFiltered;
+  }, [dateFiltered, statusFilter]);
+
+  const stats = useMemo(() => {
+    const total = tabFiltered.reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const collected = tabFiltered.reduce((s, c) => s + (c.paidAmount || 0), 0);
+    const free = tabFiltered.filter(c => c.paymentStatus === "Free").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const completed = tabFiltered.filter(c => c.caseStatus === "Completed").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const inProgress = tabFiltered.filter(c => c.caseStatus === "In progress").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const correction = tabFiltered.filter(c => c.caseStatus === "Correction").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const missed = tabFiltered.filter(c => c.caseStatus === "Missed").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    const tempCement = tabFiltered.filter(c => c.caseStatus === "Temp cement").reduce((s, c) => s + (c.totalAmount || 0), 0);
+    return { total, collected, unpaid: total - collected, free, completed, inProgress, correction, missed, tempCement, count: tabFiltered.length };
+  }, [tabFiltered]);
 
   const availableYears = useMemo(() => {
     const years = [];
-    for (let y = DATE_RANGE.startYear; y <= DATE_RANGE.endYear; y++) {
-      years.push(y);
-    }
+    for (let y = DATE_RANGE.startYear; y <= DATE_RANGE.endYear; y++) years.push(y);
     return years;
   }, []);
 
-  const months = [
-    "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
-    "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
-  ];
-
-  // تطبيق فلتر الشهر بعد البحث
-  const tabFiltered = useMemo(() => {
-    let arr = patientSearchFiltered;
-    
-    if (activeTab === "current") {
-      const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
-      arr = arr.filter(c => {
-        const d = c.actionDate || c.startDate || c.createdAt;
-        return monthKey(d) === targetMonth;
-      });
-    } else if (activeTab === "active") {
-      arr = arr.filter(c => c.caseStatus === "In progress" || c.caseStatus === "Correction");
-    } else if (activeTab === "missed") {
-      arr = arr.filter(c => c.caseStatus === "Missed");
-    } else if (activeTab === "completed") {
-      arr = arr.filter(c => c.caseStatus === "Completed");
-    }
-    
-    return arr;
-  }, [patientSearchFiltered, activeTab, selectedYear, selectedMonth]);
-
-  const stats = useMemo(() => {
-    const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
-    const src = patientSearchFiltered.filter(c => {
-      const d = c.actionDate || c.startDate || c.createdAt;
-      return monthKey(d) === targetMonth;
-    });
-    const total = src.reduce((s, c) => s + (c.totalAmount || 0), 0);
-    const paid = src.filter(c => c.paymentStatus === "Paid").reduce((s, c) => s + (c.totalAmount || 0), 0);
-    const partial = src.filter(c => c.paymentStatus === "Partial").reduce((s, c) => s + (c.paidAmount || 0), 0);
-    const free = src.filter(c => c.paymentStatus === "Free").reduce((s, c) => s + (c.totalAmount || 0), 0);
-    const unpaidTotal = src.filter(c => c.paymentStatus === "Unpaid").reduce((s, c) => s + (c.totalAmount || 0), 0);
-    const partialRemaining = src.filter(c => c.paymentStatus === "Partial").reduce((s, c) => s + ((c.totalAmount || 0) - (c.paidAmount || 0)), 0);
-    
-    return { 
-      total, 
-      paid, 
-      partial, 
-      free, 
-      unpaid: unpaidTotal + partialRemaining,
-      collected: paid + partial,
-      count: src.length 
-    };
-  }, [patientSearchFiltered, selectedYear, selectedMonth]);
+  const months = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
   async function handleAddCase(form) {
     const row = await insertCase(session.user.id, form);
@@ -1449,7 +1946,10 @@ export default function App() {
     await deleteCaseDB(c.id);
     setCases(prev => prev.filter(x => x.id !== c.id));
     setDetailCase(null);
-    showToast("🗑 تم الحذف");
+    if (selectionMode) {
+      setSelectedCases(prev => prev.filter(id => id !== c.id));
+    }
+    showToastMessage("🗑 تم الحذف");
   }
 
   async function handleUpdatePayment(c, newStatus) {
@@ -1504,14 +2004,10 @@ export default function App() {
   }, [cases, showToastMessage]);
 
   const exportCurrentMonth = useCallback(() => {
-    const targetMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
-    const dataToExport = patientSearchFiltered.filter(c => {
-      const d = c.actionDate || c.startDate || c.createdAt;
-      return monthKey(d) === targetMonth;
-    });
-    exportCSV(dataToExport);
-    showToast(`✅ تم تصدير ${dataToExport.length} حالة لشهر ${selectedMonth}/${selectedYear}`);
-  }, [patientSearchFiltered, selectedYear, selectedMonth, showToast]);
+    let dataToExport = tabFiltered;
+    exportExcel(dataToExport, `dental_filtered`);
+    showToastMessage(`✅ تم تصدير ${dataToExport.length} حالة`);
+  }, [tabFiltered, showToastMessage]);
 
   const exportRange = useCallback((startDate, endDate) => {
     const dataToExport = cases.filter(c => (c.startDate || c.createdAt) >= startDate && (c.startDate || c.createdAt) <= endDate);
@@ -1519,49 +2015,45 @@ export default function App() {
     showToastMessage(`✅ تم تصدير ${dataToExport.length} حالة`);
   }, [cases, showToastMessage]);
 
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    setSelectedCases([]);
+  };
+
+  const toggleCaseSelection = (caseId) => {
+    if (selectedCases.includes(caseId)) {
+      setSelectedCases(selectedCases.filter(id => id !== caseId));
+    } else {
+      setSelectedCases([...selectedCases, caseId]);
+    }
+  };
+
+  const generateReport = () => {
+    const selected = cases.filter(c => selectedCases.includes(c.id));
+    setReportData(selected);
+    setShowColumnSelector(true);
+  };
+
+  const confirmColumns = () => {
+    setShowColumnSelector(false);
+    setShowReport(true);
+  };
+
+  const toggleColumn = (colKey) => {
+    if (reportColumns.includes(colKey)) {
+      setReportColumns(reportColumns.filter(c => c !== colKey));
+    } else {
+      setReportColumns([...reportColumns, colKey]);
+    }
+  };
+
   const handleCardClick = (c, e) => {
-    if (e.target.closest('.badge-clickable')) return;
+    if (e.target.closest('.dropdown-container') || e.target.closest('.badge') || e.target.closest('.case-checkbox')) return;
     setDetailCase(c);
   };
 
-  const handleBadgeClick = (e, caseId, type) => {
-    e.stopPropagation();
-    e.preventDefault();
-    
-    const rect = e.target.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : rect.left;
-    const clientY = e.touches ? e.touches[0].clientY : rect.bottom;
-    
-    setDropdownState({
-      caseId: caseId,
-      type: type,
-      x: clientX,
-      y: clientY + 10
-    });
-  };
-
-  const closeDropdown = useCallback(() => {
-    setDropdownState({ caseId: null, type: null, x: 0, y: 0 });
-  }, []);
-
-  useEffect(() => {
-    document.addEventListener('click', closeDropdown);
-    document.addEventListener('touchstart', closeDropdown);
-    return () => {
-      document.removeEventListener('click', closeDropdown);
-      document.removeEventListener('touchstart', closeDropdown);
-    };
-  }, [closeDropdown]);
-
-  if (!authInit) return <div className="loading" style={{ minHeight: "100vh" }}><div className="spinner" /></div>;
+  if (!authInit) return <div className="loading"><div className="spinner" /></div>;
   if (!session) return <LoginScreen onLogin={s => setSession(s)} />;
-
-  const tabs = [
-    { id: "current", label: "📅 الشهر المحدد" },
-    { id: "active", label: "⚙️ قيد العمل" },
-    { id: "missed", label: "⚠️ Missed" },
-    { id: "completed", label: "✅ المنتهية" },
-  ];
 
   return (
     <>
@@ -1570,70 +2062,75 @@ export default function App() {
         <div className="header-top">
           <div className="header-title">🦷 Dental Tracker</div>
           <div className="header-actions">
-            <input type="file" ref={importRef} accept=".csv" style={{ display: "none" }} onChange={handleImport} />
-            <button className="btn btn-ghost btn-sm" onClick={() => importRef.current?.click()}>📥 استيراد</button>
-            <button className="btn btn-ghost btn-sm" onClick={exportCurrentMonth}>📤 تصدير الشهر</button>
-            <button className="btn btn-primary btn-sm" onClick={exportAll}>📤 تصدير الكل</button>
-            <button className="btn btn-ghost btn-icon" onClick={() => setShowSettings(true)}>⚙️</button>
+            <input type="file" ref={importRef} accept=".xlsx, .xls" style={{ display: "none" }} onChange={handleImport} />
+            <button className="btn btn-ghost btn-sm" onClick={() => importRef.current?.click()}>📥</button>
+            <div style={{ position: "relative" }}>
+              <button className="btn btn-ghost btn-sm" onClick={() => setShowExportDropdown(!showExportDropdown)}>📤▼</button>
+              {showExportDropdown && <ExportDropdown onExportAll={exportAll} onExportCurrent={exportCurrentMonth} onExportRange={() => setShowRangeExport(true)} onClose={() => setShowExportDropdown(false)} />}
+            </div>
+            <button className="btn btn-ghost btn-sm" onClick={() => setShowStats(true)}>📊</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => setShowSettings(true)}>⚙️</button>
+            <button className={`btn btn-ghost btn-sm ${selectionMode ? "active" : ""}`} onClick={toggleSelectionMode}>☑️ تحديد</button>
+            {selectionMode && selectedCases.length > 0 && (
+              <button className="btn btn-primary btn-sm" onClick={generateReport}>📋 تقرير ({selectedCases.length})</button>
+            )}
             <button className="btn btn-ghost btn-sm" onClick={() => supabase.auth.signOut()}>خروج</button>
           </div>
         </div>
-        <div className="branch-bar">
-          <span className="branch-label">الفرع:</span>
-          <select className="branch-select" value={activeBranch} onChange={e => setActiveBranch(e.target.value)}>
-            <option value="all">🏥 كل الفروع</option>
-            {settings.branches.map(b => <option key={b} value={b}>{b}</option>)}
-          </select>
-        </div>
+      </div>
+      
+      <div className="filter-bar">
+        <span className="filter-label">الفرع:</span>
+        <select className="filter-select" value={activeBranch} onChange={e => setActiveBranch(e.target.value)}>
+          <option value="all">🏥 الكل</option>
+          {settings.branches.map(b => <option key={b} value={b}>{b}</option>)}
+        </select>
         
-        <div className="month-selector-wrapper">
-          <span className="branch-label">السنة:</span>
-          <select className="year-select" value={selectedYear} onChange={e => setSelectedYear(parseInt(e.target.value))}>
-            {availableYears.map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
-          
-          <span className="branch-label" style={{ marginRight: 8 }}>الشهر:</span>
-          <select className="month-select" value={selectedMonth} onChange={e => setSelectedMonth(parseInt(e.target.value))}>
-            {months.map((month, index) => (
-              <option key={index} value={index + 1}>{month}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="tabs">
-          {tabs.map(t => (
-            <button key={t.id} className={`tab${activeTab === t.id ? " active" : ""}`} onClick={() => setActiveTab(t.id)}>
-              {t.label}
-            </button>
-          ))}
+        <span className="filter-label">السنة:</span>
+        <select className="filter-select" value={selectedYear} onChange={e => setSelectedYear(e.target.value === "all" ? "all" : parseInt(e.target.value))}>
+          <option value="all">📅 الكل</option>
+          {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
+        </select>
+        
+        {selectedYear !== "all" && (
+          <>
+            <span className="filter-label">الشهر:</span>
+            <select className="filter-select" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value === "all" ? "all" : parseInt(e.target.value))}>
+              <option value="all">📅 الكل</option>
+              {months.map((m, i) => <option key={i} value={i+1}>{m}</option>)}
+            </select>
+          </>
+        )}
+        
+        <span className="filter-label">الحالة:</span>
+        <select className="filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+          <option value="all">📋 الكل</option>
+          <option value="active">⚙️ قيد العمل</option>
+          <option value="completed">✅ منتهية</option>
+          <option value="missed">⚠️ Missed</option>
+          <option value="temp">🔩 Temp cement</option>
+        </select>
+      </div>
+      
+      <div className="toolbar">
+        <div className="search-wrap">
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 بحث باسم المريض..." />
         </div>
       </div>
+      
       <div className="main">
         <div className="stats-grid">
-          {[
-            { label: "إجمالي الشهر", value: `${fmtMoney(stats.total)} ج.م`, color: "var(--gold)", icon: "💰" },
-            { label: "المحصل", value: `${fmtMoney(stats.collected)} ج.م`, color: "var(--mint)", icon: "✅" },
-            { label: "المتبقي", value: `${fmtMoney(stats.unpaid)} ج.م`, color: "var(--rose)", icon: "⏳" },
-            { label: "مجاناً", value: `${fmtMoney(stats.free)} ج.م`, color: "var(--amber)", icon: "🎁" },
-            { label: "عدد الحالات", value: tabFiltered.length, color: "var(--lavender)", icon: "📋" },
-          ].map(({ label, value, color, icon }, i) => (
-            <div className="stat-card fade-up" key={i} style={{ animationDelay: `${i * 0.06}s`, "--card-color": color }}>
-              <div className="stat-label">{icon} {label}</div>
-              <div className="stat-value" style={{ color }}>{value}</div>
-            </div>
-          ))}
+          <div className="stat-card"><div className="stat-label">💰 الإجمالي</div><div className="stat-value">{fmtMoney(stats.total)}</div></div>
+          <div className="stat-card"><div className="stat-label">✅ المحصل</div><div className="stat-value">{fmtMoney(stats.collected)}</div></div>
+          <div className="stat-card"><div className="stat-label">⏳ المتبقي</div><div className="stat-value">{fmtMoney(stats.unpaid)}</div></div>
+          <div className="stat-card"><div className="stat-label">🎁 مجاناً</div><div className="stat-value">{fmtMoney(stats.free)}</div></div>
+          <div className="stat-card"><div className="stat-label">📋 منتهية</div><div className="stat-value">{fmtMoney(stats.completed)}</div></div>
+          <div className="stat-card"><div className="stat-label">⚙️ قيد العمل</div><div className="stat-value">{fmtMoney(stats.inProgress)}</div></div>
+          <div className="stat-card"><div className="stat-label">🔧 تصحيح</div><div className="stat-value">{fmtMoney(stats.correction)}</div></div>
+          <div className="stat-card"><div className="stat-label">⚠️ Missed</div><div className="stat-value">{fmtMoney(stats.missed)}</div></div>
+          <div className="stat-card"><div className="stat-label">📊 عدد الحالات</div><div className="stat-value">{stats.count}</div></div>
         </div>
-        <div className="toolbar">
-          <div className="search-wrap">
-            <input 
-              value={search} 
-              onChange={e => setSearch(e.target.value)} 
-              placeholder="🔍 بحث باسم المريض (جميع الحالات)..." 
-            />
-          </div>
-        </div>
+        
         {loading ? <Spinner /> : tabFiltered.length === 0 ? (
           <div className="empty"><div className="empty-icon">📋</div><div className="empty-msg">لا توجد حالات</div></div>
         ) : (
@@ -1641,18 +2138,26 @@ export default function App() {
             {tabFiltered.map((c) => {
               const sm = STATUS_META[c.caseStatus] || {};
               const mc = MAT_COLORS[c.materialName] || "var(--mint)";
-              const getPaymentLabel = (status, paidAmount) => {
-                if (status === "Paid") return "مدفوع كامل";
-                if (status === "Free") return "مجاناً";
-                if (status === "Partial") return `مدفوع جزئي (${fmtMoney(paidAmount)})`;
-                return "غير مدفوع";
+              const activePaymentStatuses = settings.paymentStatuses.filter(p => p.active !== false);
+              const getPaymentDisplay = (status) => {
+                const ps = activePaymentStatuses.find(p => p.name === status);
+                return ps ? (ps.display || ps.name) : status;
               };
               return (
-                <div key={c.id} className="case-card fade-up" style={{ "--status-color": sm.color, animationDelay: `${Math.min(i, 12) * 0.04}s` }}>
-                  <div className="case-clickable-area" onClick={(e) => handleCardClick(c, e)}>
-                    <div className="case-card-header">
-                      <div><div className="case-name">{c.patientName}</div><div className="case-date">{fmtDate(c.startDate)}</div></div>
-                      <span className="case-branch">{c.branchName}</span>
+                <div key={c.id} className="case-card" style={{ "--status-color": sm.color }}>
+                  {selectionMode && (
+                    <input
+                      type="checkbox"
+                      className="case-checkbox"
+                      checked={selectedCases.includes(c.id)}
+                      onChange={() => toggleCaseSelection(c.id)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  )}
+                  <div className="case-content" onClick={(e) => handleCardClick(c, e)}>
+                    <div className="case-header">
+                      <div className="case-name">{c.patientName}</div>
+                      <div className="case-branch">{c.branchName}</div>
                     </div>
                     <div className="case-badges">
                       <BadgeDropdown c={c} type="status" settings={settings} onStatusChange={handleUpdateCaseStatus} setToast={showToastMessage} />
@@ -1664,37 +2169,11 @@ export default function App() {
                       <span className="case-units">{c.units} × {c.pricePerUnit}</span>
                       <span className="case-date">{fmtDate(c.startDate)}</span>
                     </div>
+                    {c.teeth && c.teeth.length > 0 && (
+                      <div className="case-teeth">🦷 {c.teeth.join(", ")}</div>
+                    )}
+                    {c.paymentStatus === "Partial" && <div style={{ fontSize: 8, color: "var(--mint)", marginTop: 3 }}>محصل: {fmtMoney(c.paidAmount)}</div>}
                   </div>
-                  
-                  {dropdownState.caseId === c.id && dropdownState.type === 'status' && (
-                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 2000 }}>
-                      {settings.caseStatuses.map(s => (
-                        <div key={s.id} className="dropdown-item" onClick={() => handleUpdateCaseStatus(c, s.name)}>
-                          {STATUS_META[s.name]?.icon} {s.name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {dropdownState.caseId === c.id && dropdownState.type === 'material' && (
-                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 2000 }}>
-                      {settings.materials.map(m => (
-                        <div key={m.id} className="dropdown-item" onClick={() => handleUpdateMaterial(c, m.name)}>
-                          {m.name} {m.price ? `(${m.price})` : '(سعر حر)'}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {dropdownState.caseId === c.id && dropdownState.type === 'payment' && (
-                    <div className="dropdown-menu" style={{ position: 'fixed', top: dropdownState.y, left: dropdownState.x, zIndex: 2000 }}>
-                      {settings.paymentStatuses.filter(s => s.name !== "Partial").map(s => (
-                        <div key={s.id} className="dropdown-item" onClick={() => handleUpdatePayment(c, s.name)}>
-                          {s.name === "Paid" ? "✅ مدفوع كامل" : (s.name === "Free" ? "🎁 مجاناً" : "❌ غير مدفوع")}
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -1706,9 +2185,29 @@ export default function App() {
       
       {showAdd && <CaseModal settings={settings} defaultBranch={activeBranch !== "all" ? activeBranch : settings.branches[0]} onSave={handleAddCase} onClose={() => setShowAdd(false)} />}
       {editCase && <CaseModal existing={editCase} settings={settings} defaultBranch={editCase.branchName} onSave={handleEditCase} onClose={() => setEditCase(null)} />}
-      {detailCase && <CaseDrawer c={detailCase} settings={settings} onEdit={c => { setEditCase(c); setDetailCase(null); }} onDelete={handleDelete} onUpdatePayment={handleUpdatePayment} onClose={() => setDetailCase(null)} />}
-      {showSettings && <SettingsScreen settings={settings} onSave={handleSaveSettings} onClose={() => setShowSettings(false)} />}
-      <Toast msg={toast} />
+      {detailCase && <CaseDrawer c={detailCase} settings={settings} onEdit={c => { setEditCase(c); setDetailCase(null); }} onDelete={handleDelete} onUpdatePayment={handleUpdatePayment} onClose={() => setDetailCase(null)} setToast={showToastMessage} />}
+      {showSettings && <SettingsScreen settings={settings} onSave={handleSaveSettings} onClose={() => setShowSettings(false)} setToast={showToastMessage} cases={cases} />}
+      {showStats && <StatsModal cases={cases} onClose={() => setShowStats(false)} />}
+      {showRangeExport && <RangeExportModal onClose={() => setShowRangeExport(false)} onExport={exportRange} />}
+      {showColumnSelector && (
+        <ColumnSelectorModal
+          columns={availableColumns}
+          selectedColumns={reportColumns}
+          onToggle={toggleColumn}
+          onConfirm={confirmColumns}
+          onCancel={() => setShowColumnSelector(false)}
+        />
+      )}
+      {showReport && (
+        <ReportModal
+          cases={reportData}
+          selectedColumns={reportColumns}
+          onClose={() => { setShowReport(false); setSelectionMode(false); setSelectedCases([]); }}
+          onExport={() => showToastMessage("✅ تم تصدير التقرير")}
+        />
+      )}
+      
+      <Toast msg={toast} onClick={() => setToast("")} />
     </>
   );
 }
